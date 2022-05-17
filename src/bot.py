@@ -1,9 +1,9 @@
 import discord
 
 from discord.ext import commands
-from config import settings
+from config import bot_settings
 
-bot = commands.Bot(command_prefix=settings['prefix'])  # Создаем "тело" бота
+bot = commands.Bot(command_prefix=bot_settings['prefix'])  # Создаем "тело" бота
 
 @bot.event
 async def on_ready():  # Event on_ready активируется когда бот готов к использованию
@@ -23,4 +23,4 @@ async def msg(ctx, *args):
     await user.send(response)
 
 
-bot.run(settings['token'])  # Запускаем бота с помощью нашей библиотеки из файла config (опять же если он у вас есть)
+bot.run(bot_settings['token'])  # Запускаем бота с помощью нашей библиотеки из файла config (опять же если он у вас есть)
