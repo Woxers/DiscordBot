@@ -1,5 +1,7 @@
 # Папки
 *build-*
+__pycache__
 
 # Файлы
 config.py
+jsonParser.py
