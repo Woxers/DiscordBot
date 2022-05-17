@@ -5,3 +5,4 @@ __pycache__
 # Файлы
 config.py
 jsonParser.py
+*.db
