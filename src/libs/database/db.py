@@ -8,8 +8,8 @@ from tabnanny import check
 from time import timezone
 from typing import List
 
-# Подключаем путь к каталогу с файлом настроек 
-# и запросами для создания новой базы данных
+# Connecting sql query for creating a new database and
+# connecting path to the directory with the settings file
 if __name__ == "__main__":
     from create_db_sql import create_status_table
     from create_db_sql import create_users_table
@@ -28,7 +28,7 @@ class Database:
     __connection = None
     __statusList = []
 
-    # Конструктор объекта
+    # Object constructor
     def __init__(self):
         if os.path.exists(self.__filePath):
             print("Exist")
@@ -43,7 +43,7 @@ class Database:
             for status in tempStatusList:
                 self.__statusList.append(status[0])
 
-    # Подключаем базу данных
+    # Connecting database
     def create_connection(self):
         connection = None
         try:
@@ -53,7 +53,7 @@ class Database:
             print(f"The error in create_connection '{err_string}' occured")
         return connection
 
-    # Выполнить SQL запрос
+    # Execute SQL query
     def execute_query(self, query):
         cursor = self.__connection.cursor()
         try:
@@ -64,7 +64,7 @@ class Database:
             print(f"[ERROR] The error in execute_query '{err_string}' occurred")
             return "ERROR"
 
-    # Внести нового пользователя
+    # Add a new user
     def add_user(self, id):
         if (id.isnumeric()):
             now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 3)))
@@ -73,7 +73,7 @@ class Database:
         else:
             print(f"[ERROR] [add_user] Invalid ID: {id}")
 
-    # Есть ли пользователь с заданным ID
+    # Is there a user with the specified ID
     def check_user(self, id):
         if (id.isnumeric()):
             result = self.execute_query(f"""SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = '{id}') = 1 THEN "TRUE" ELSE "FALSE" END""")
@@ -81,7 +81,7 @@ class Database:
         else:
             print(f"[ERROR] The error in check_user occurred ID {id}")
 
-    # Поставить статус регистрации пользователя
+    # Set user registration status
     def set_status(self, id, status):
         if self.check_user(id): 
             if status in self.__statusList:
@@ -92,7 +92,7 @@ class Database:
         else:
             print(f"[ERROR] [set_status] No player with such id: {id}")
 
-    # Изменить имя пользователя
+    # Set user name
     def set_name(self, id, name):
         match = re.fullmatch(db_settings['name_pattern'], name)
         if (match):
@@ -103,7 +103,7 @@ class Database:
         else:
             print(f"[ERROR] [set_name] Invalid name: {name}")
     
-    # Изменить никнейм пользователя
+    # Set user nickname
     def set_nickname(self, id, nickname):
         match = re.fullmatch(db_settings['nickname_pattern'], nickname)
         if (match):
@@ -114,7 +114,7 @@ class Database:
         else:
             print(f"[ERROR] [set_nickname] Invalid nickname: {nickname}")
     
-    # Обновить дату регистрации пользователя
+    # Update registration date
     def update_reg_date(self, id):
         if self.check_user(id): 
             now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 3)))
@@ -122,7 +122,7 @@ class Database:
         else:
             print(f"[ERROR] [update_reg_date] No player with such id: {id}")
 
-    # TODO: УДАЛИТЬ
+    # TODO: DELETE
     def __exit__(self):
         print("EXIT")
         self.__connection.close()

@@ -2,7 +2,6 @@ import discord
 
 from discord.ext import commands
 
-# Пользовательские
 from libs import Database
 from config import bot_settings, db_settings
 
@@ -21,9 +20,6 @@ if(db.check_user(user_id)):
 else:
     print("Нет в базе")
 result = db.execute_query("SELECT * FROM users")
-
-
-
 
 if (result != "ERROR"):
     for a in result:
