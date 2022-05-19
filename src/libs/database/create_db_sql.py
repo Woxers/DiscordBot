@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     DiscordID      STRING         PRIMARY KEY,
     Status                        REFERENCES status (Name) 
                                   NOT NULL
-                                  DEFAULT (0),
+                                  DEFAULT ('JOINED'),
     JoinedDatetime DATETIME       NOT NULL,
     Name           STRING (1, 32),
     Nickname       STRING (3, 32) UNIQUE,
