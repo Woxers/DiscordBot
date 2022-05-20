@@ -1,49 +1,73 @@
 import discord
+import asyncio
 
 from discord.ext import commands
 
 from libs import Database
-from config import bot_settings, db_settings
+from config import bot_settings, db_settings, embed_settings
 
-bot = commands.Bot(command_prefix=bot_settings['prefix'])  # Создаем "тело" бота
+class CustomBot(commands.Bot):
+    def __init__(self):
+        helpCommand = CustomHelpCommand()
+        super().__init__(command_prefix=bot_settings['prefix'], help_command=helpCommand)
 
-db = Database()
-user_id = "222746438814138368"
-user_id1 = "1222746438814138368"
-db.add_user(user_id)
-db.set_status(user_id, "QUEUED")
-db.set_nickname(user_id, "Woxerss")
-db.set_name(user_id, "Артем")
-db.update_reg_date(user_id)
-if(db.check_user(user_id)):
-    print("Есть в базе")
-else:
-    print("Нет в базе")
-result = db.execute_query("SELECT * FROM users")
+    async def on_ready(self): 
+        print('Bot connected successfully!')
 
-if (result != "ERROR"):
-    for a in result:
-        print(f"{a}")
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            msg = await ctx.send(embed = discord.Embed(description = f'Command not found', color = embed_settings['accent_color']))
+            await asyncio.sleep(3)
+            await msg.delete()
 
+# TODO: Перенести в отдельный файл
+class CustomHelpCommand(commands.HelpCommand):
+    helpPages = [['Utility', '- ping\n- hello\n- hi @someone'], ['Test', '- ping\n- hello\n- hi @someone']]
 
-db.__exit__()
+    async def send_bot_help(self, mapping):
+        # Embed generator for python:
+        # https://cog-creators.github.io/discord-embed-sandbox/
+        destination = self.get_destination()
+        embededMessage = discord.Embed(title='Help Command')
+        for page in self.helpPages:
+            embededMessage.add_field(name=page[0], value=page[1])
+        await destination.send(embed=embededMessage)
+        return await super().send_bot_help(mapping)
+    
+    async def command_not_find(self, ctx, *, command=None):
+        print("command_not_find")
+        return await super().command_callback(ctx, command=command)
 
-@bot.event
-async def on_ready():  # Event on_ready активируется когда бот готов к использованию
-    print('Bot connected successfully!')
+# TODO: Перенести в отдельный файл
+class UtilityCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    
+    @commands.command()
+    @commands.has_permissions(administrator = True)
+    async def ping(self, ctx):
+        msg = await ctx.send(f'pong in {round(self.bot.latency * 1000)} ms!')
+        await asyncio.sleep(5)
+        await msg.delete()
 
-@bot.command()
-async def hello(ctx):  # Создаем комманду hello
-    author = ctx.message.author  # Создаем переменную author в которую занесем имя и тэг пользователя.
-    await ctx.send(f'Hello, {author.mention}!')  # Используем метод .mention, который "тэгает" пользователя
+    @ping.error
+    async def ping_error(self, ctx, error):
+        msg = await ctx.send(embed = discord.Embed(description = f'{error}', color = embed_settings['accent_color']))
+        await asyncio.sleep(5)
+        await msg.delete()
 
-@bot.command()
-async def msg(ctx, *args):
-    response = ""
-    for arg in args: response = response + " " + arg
+# TODO: Перенести в отдельный файл
+def setupUtilityCog(CustomBot):
+    bot.add_cog(UtilityCog(bot))
 
-    user = await bot.fetch_user('222746438814138368')
-    await user.send(response)
+bot = CustomBot()
+setupUtilityCog(bot)
 
+# @bot.event
+# async def on_command_error(ctx, error):
+#     if isinstance(error, commands.CommandNotFound):
+#         msg = await ctx.send(embed = discord.Embed(description = f'Command not found', color = embed_setting['accent_color']))
+#         await asyncio.sleep(3)
+#         await msg.delete()
 
-#bot.run(bot_settings['token'])  # Запускаем бота с помощью нашей библиотеки из файла config (опять же если он у вас есть)
+bot.run(bot_settings['token'])

@@ -4,6 +4,9 @@ bot_settings = {
     'id': 'Bot account ID',
     'prefix': 'commands prefix'
 }
+embed_settings = {
+    'accent_color': 0xffffff
+}
 
 db_settings = {
     'file_name': 'my.sqlite',
