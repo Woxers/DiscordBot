@@ -4,19 +4,19 @@ import asyncio
 from discord.ext import commands
 
 from libs import Database
-from config import bot_settings, db_settings, embed_settings
+from config import Config
 
 class CustomBot(commands.Bot):
     def __init__(self):
         helpCommand = CustomHelpCommand()
-        super().__init__(command_prefix=bot_settings['prefix'], help_command=helpCommand)
+        super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand)
 
     async def on_ready(self): 
         print('Bot connected successfully!')
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            msg = await ctx.send(embed = discord.Embed(description = f'Command not found', color = embed_settings['accent_color']))
+            msg = await ctx.send(embed = discord.Embed(description = f'Command not found', color = int(Config.get('embed', 'accent_color'), 16)))
             await asyncio.sleep(3)
             await msg.delete()
 
@@ -34,7 +34,7 @@ class CustomHelpCommand(commands.HelpCommand):
         await destination.send(embed=embededMessage)
         return await super().send_bot_help(mapping)
     
-    async def command_not_find(self, ctx, *, command=None):
+    async def command_not_found(self, ctx, *, command=None):
         print("command_not_find")
         return await super().command_callback(ctx, command=command)
 
@@ -42,6 +42,7 @@ class CustomHelpCommand(commands.HelpCommand):
 class UtilityCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config()
     
     @commands.command()
     @commands.has_permissions(administrator = True)
@@ -52,9 +53,17 @@ class UtilityCog(commands.Cog):
 
     @ping.error
     async def ping_error(self, ctx, error):
-        msg = await ctx.send(embed = discord.Embed(description = f'{error}', color = embed_settings['accent_color']))
+        if (str(ctx.channel).startswith("Direct Message with")):
+            return
+        msg = await ctx.send(embed = discord.Embed(description = f'{error}', color = int(Config.get('embed', 'accent_color'), 16)))
         await asyncio.sleep(5)
         await msg.delete()
+    
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        channel = member.guild.system_channel
+        if channel is not None:
+            await channel.send(f'Welcome {member.mention}.')
 
 # TODO: Перенести в отдельный файл
 def setupUtilityCog(CustomBot):
@@ -70,4 +79,4 @@ setupUtilityCog(bot)
 #         await asyncio.sleep(3)
 #         await msg.delete()
 
-bot.run(bot_settings['token'])
+bot.run(Config.get('bot', 'token'))

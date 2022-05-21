@@ -1,0 +1,23 @@
+{
+    "bot": {
+        "token": "token",
+        "prefix": "!"
+    },
+    "embed": {
+        "accent_color": "0xffffff"
+    },
+    "db": {
+        "name": "aloha.db",
+        "path": "D:/!GitClones/DiscordBot/src/data/",
+        "nickname_pattern": "^[a-zA-Z0-9_]{2,24}$",
+        "name_pattern": "^[а-яА-ЯёЁ ]{1,32}$"
+    },
+    "log": {
+        "file_name": "logs.txt",
+        "path": "D:/!GitClones/DiscordBot/src/data/"
+    },
+    "server": {
+        "greetings_channel": "",
+        "auto_role": ""
+    }
+}
