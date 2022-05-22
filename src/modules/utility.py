@@ -2,15 +2,12 @@ import discord
 import asyncio
 
 from config import Config
-from logs import Logs
-
 from discord.ext import commands
 
 class UtilityCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
-        Logs.new('INIT', 'Initialization of UtilityCog')
     
     @commands.command()
     @commands.has_permissions(administrator = True)
