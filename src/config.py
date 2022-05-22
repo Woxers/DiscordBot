@@ -19,22 +19,24 @@ class Config():
 
     @classmethod
     def get(cls, settingsType, key):
-        if cls.__instance is None: 
-            cls.__new__(cls)
+        # if cls.__instance is None: 
+        #     cls.__new__(cls)
         return cls.__json_string[settingsType][key]
 
     @classmethod
     def set(cls, settingsType, key):
-        if cls.__instance is None: 
-            cls.__new__(cls)
+        # if cls.__instance is None: 
+        #     cls.__new__(cls)
         cls.__json_string['server']['auto_role'] = '4e'
         cls.update()
 
     @classmethod
     def update(cls):
-        if cls.__instance is None: 
-            cls.__new__(cls)
+        # if cls.__instance is None: 
+        #     cls.__new__(cls)
         path = os.getcwd() + '\data\settings.json'
         with open(path, 'w', encoding='utf-8') as settings:
             json.dump(cls.__json_string, settings, ensure_ascii=False, indent=4)
         settings.close()
+
+config = Config()

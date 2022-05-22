@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import logging
 
 from discord.ext import commands
 
@@ -35,7 +36,8 @@ class CustomHelpCommand(commands.HelpCommand):
         return await super().send_bot_help(mapping)
     
     async def command_not_found(self, ctx, *, command=None):
-        print("command_not_find")
+        # Command not found
+        print("command_not_found")
         return await super().command_callback(ctx, command=command)
 
 # TODO: Перенести в отдельный файл
@@ -64,6 +66,9 @@ class UtilityCog(commands.Cog):
         channel = member.guild.system_channel
         if channel is not None:
             await channel.send(f'Welcome {member.mention}.')
+
+logging.basicConfig(filename='logs/latest.log',format='%(asctime)s: %(message)s', datefmt='[%y-%m-%d %H:%M:%S]')
+logging.warning('Start logging')
 
 # TODO: Перенести в отдельный файл
 def setupUtilityCog(CustomBot):
