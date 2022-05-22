@@ -1,8 +1,5 @@
 import json
-#import logging
 import os.path
-
-#logger = logging.getLogger(__name__)
 
 # Singleton 
 class Config():

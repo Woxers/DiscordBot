@@ -1,13 +1,17 @@
 import discord
 import asyncio
+import logging
 
 from config import Config
 from discord.ext import commands
+
+logger = logging.getLogger(__name__)
 
 class UtilityCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
+        logger.info('Connecting Utility module')
     
     @commands.command()
     @commands.has_permissions(administrator = True)
