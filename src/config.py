@@ -22,8 +22,12 @@ class Config():
         return cls.__json_string[settingsType][key]
 
     @classmethod
-    def set(cls, settingsType, key):
-        cls.__json_string['server']['auto_role'] = '4e'
+    def getColor(cls, color):
+        return int(cls.get('embed', f'{color}'), 16)
+
+    @classmethod
+    def set(cls, settingsType, key, value):
+        cls.__json_string[settingsType][key] = value
         cls.update()
 
     @classmethod

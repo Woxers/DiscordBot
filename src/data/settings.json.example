@@ -4,7 +4,9 @@
         "prefix": "!"
     },
     "embed": {
-        "accent_color": "0xffffff"
+        "neutral": "0xFFFFFF",
+        "error": "0xCB3D35",
+        "success": "0x538A1B"
     },
     "db": {
         "name": "aloha.db",
@@ -13,8 +15,7 @@
         "name_pattern": "^[а-яА-ЯёЁ ]{1,32}$"
     },
     "log": {
-        "name": "logs.txt",
-        "path": "D:/!GitClones/DiscordBot/src/data/"
+        "path": "logs/",
     },
     "server": {
         "greetings_channel": "",

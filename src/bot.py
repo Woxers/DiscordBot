@@ -6,35 +6,42 @@ import datetime
 from discord.ext import commands
 from config import Config
 
-# Initialize logger
-path = Config.get('log', 'path') + str(datetime.datetime.now().date()) + '.log'
-logging.basicConfig(filename=path,format='[%(asctime)s] [%(levelname)s]: %(message)s', datefmt='%y-%m-%d %H:%M:%S', encoding='utf-8', level=20)
-logging.info('Start logging')
+import log
 
-from libs import Database
-from modules import UtilityCog, CustomHelpCommand
+from modules import WelcomeCog, UtilityCog, CustomHelpCommand
 from libs import Database
 
 class CustomBot(commands.Bot):
     def __init__(self):
         helpCommand = CustomHelpCommand()
-        super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand)
+        intents = discord.Intents.all()
+        super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand, intents=intents)
+        intents.members = True
+        self.setupCogs()
 
     async def on_ready(self): 
-        logging.info('Bot connected successfully!')
         print('Bot connected successfully!')
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            msg = await ctx.send(embed = discord.Embed(description = f'Command not found', color = int(Config.get('embed', 'accent_color'), 16)))
-            await asyncio.sleep(3)
+            await self.sendEmbed(ctx, 'Command not found', None, 3, 'error')
+
+    def setupCogs(self):
+        self.add_cog(UtilityCog(self))
+        self.add_cog(WelcomeCog(self))
+
+    async def sendEmbed(self, ctx, title = None, description = None, duration = None, color = None):
+        embed = discord.Embed(title = f'{title}', color = Config.getColor(color))
+        #embed.set_author(name="Advanced Manager", icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
+        if (description != None):
+            embed.description = description
+        #embed.set_footer(text='GS#Private - Vanilla MC \u200b')
+        #embed.timestamp = timestamp=datetime.datetime.utcnow()
+        msg = await ctx.send(embed = embed)
+        if (duration > 0):
+            await asyncio.sleep(duration)
             await msg.delete()
 
-# Подключение модули
-def setupCogs(CustomBot):
-    bot.add_cog(UtilityCog(bot))
-
 bot = CustomBot()
-setupCogs(bot)
 
 bot.run(Config.get('bot', 'token'))
