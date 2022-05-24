@@ -45,9 +45,9 @@ class Database:
                 cls.execute_query(create_status_table)
                 cls.execute_query(create_users_table)
                 cls.execute_query(insert_status)
-                tempStatusList = cls.execute_query('SELECT Name FROM status')
-                for status in tempStatusList:
-                    cls.__statusList.append(status[0])
+            tempStatusList = cls.execute_query('SELECT Name FROM status')
+            for status in tempStatusList:
+                cls.__statusList.append(status[0])
             print('New Database Object created!')
             return cls.__instance
 
@@ -59,7 +59,7 @@ class Database:
             connection = sqlite3.connect(cls.__filePath)
             logger.info('Connecting to SQLite DB')
         except sqlite3.Error as err_string:
-            logger.exception(f'The exception in create_connection occured: {err_string}')
+            logger.exception(f'The exception in create_connection occured, {err_string}')
         return connection
 
     # Execute SQL query
@@ -71,38 +71,34 @@ class Database:
             cls.__connection.commit()
             return cursor.fetchall()
         except sqlite3.Error as err_string:
-            logger.exception(f'The exception in execute_query occured: {err_string}')
+            logger.exception(f'The exception in execute_query occured, {err_string}')
+    
+    # Check user
+    @classmethod
+    def check_user(cls, id: int):
+        result = cls.execute_query(f'''SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = '{id}') = 1 THEN 1 ELSE 0 END''')
+        return 1 if (result[0][0] == 1) else 0
 
     # Add a new user
     @classmethod
-    def add_user(cls, id):
-        if (id.isnumeric()):
-            now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 3)))
-            result = cls.execute_query(f''' INSERT INTO users (DiscordID, JoinedDatetime) VALUES ("{id}", "{now}") ''')
-            return result
-        else:
-            logger.eror(f'The error in add_user occured: Invalid User ID: {id}')
+    def add_user(cls, id: int):
+        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 3)))
+        cls.execute_query(f''' INSERT INTO users (DiscordID, JoinedDatetime) VALUES ({id}, "{now}") ''')
 
-    # Is there a user with the specified ID
+    # Update registration date
     @classmethod
-    def check_user(cls, id):
-        if (id.isnumeric()):
-            result = cls.execute_query(f'''SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = '{id}') = 1 THEN "TRUE" ELSE "FALSE" END''')
-            return 1 if (result[0][0] == 'TRUE') else 0
-        else:
-            logger.eror(f'The error in check_user occured: Invalid User ID: {id}')
+    def get_user(cls, id: int):
+        result = cls.execute_query(f''' SELECT * FROM users WHERE DiscordID = {id} ''')
+        return result
 
     # Set user registration status
     @classmethod
-    def set_status(cls, id, status):
-        if cls.check_user(id): 
-            if status in cls.__statusList:
-                cls.execute_query(f''' UPDATE users SET status="{status}" WHERE DiscordID="{id}" ''')
-            else:
-                print(f'[ERROR] [set_status] Status not exist: {status}')
-                return 0
+    def set_status(cls, id: int, status):
+        if status in cls.__statusList:
+            cls.execute_query(f''' UPDATE users SET status="{status}" WHERE DiscordID={id} ''')
         else:
-            logger.eror(f'The error in set_status occured: No player with such ID: {id}')
+            logger.error(f'The error in set_status occured, Invalid status: {status}')
+            return -1
 
     # Set user name
     @classmethod
@@ -110,11 +106,13 @@ class Database:
         match = re.fullmatch(Config.get('db', 'name_pattern'), name)
         if (match):
             if cls.check_user(id): 
-                cls.execute_query(f''' UPDATE users SET Name="{name}" WHERE DiscordID="{id}" ''')
+                cls.execute_query(f''' UPDATE users SET Name="{name}" WHERE DiscordID={id} ''')
             else:
-                logger.eror(f'The error in set_name occured: No player with such ID: {id}')
+                logger.error(f'The error in set_name occured, No player with such ID: {id}')
+                return -1
         else:
-            logger.eror(f'The error in set_name occured: Invalid name: {name}')
+            logger.error(f'The error in set_name occured, Invalid name: {name}')
+            return -1
     
     # Set user nickname
     @classmethod
@@ -122,19 +120,22 @@ class Database:
         match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
         if (match):
             if cls.check_user(id): 
-                cls.execute_query(f''' UPDATE users SET Nickname="{nickname}" WHERE DiscordID="{id}" ''')
+                cls.execute_query(f''' UPDATE users SET Nickname="{nickname}" WHERE DiscordID={id} ''')
             else:
-                logger.eror(f'The error in set_nickname occured: No player with such ID: {id}')
+                logger.error(f'The error in set_nickname occured, No player with such ID: {id}')
+                return -1
         else:
-            logger.eror(f'The error in set_nickname occured: Invalid nickname: {nickname}')
+            logger.error(f'The error in set_nickname occured, Invalid nickname: {nickname}')
+            return -1
     
     # Update registration date
     @classmethod
     def update_reg_date(cls, id):
         if cls.check_user(id): 
             now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 3)))
-            cls.execute_query(f''' UPDATE users SET RegDatetime="{now}" WHERE DiscordID="{id}" ''')
+            cls.execute_query(f''' UPDATE users SET RegDatetime="{now}" WHERE DiscordID={id} ''')
         else:
-            logger.eror(f'The error in update_reg_date occured: No player with such ID: {id}')
+            logger.error(f'The error in update_reg_date occured, No player with such ID: {id}')
+            return -1
 
 db = Database()

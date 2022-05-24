@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS status (
 
 create_users_table = """
 CREATE TABLE IF NOT EXISTS users (
-    DiscordID      STRING         PRIMARY KEY,
+    DiscordID      INT            PRIMARY KEY,
     Status                        REFERENCES status (Name) 
                                   NOT NULL
                                   DEFAULT ('JOINED'),
