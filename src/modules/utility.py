@@ -50,9 +50,9 @@ class UtilityCog(commands.Cog):
             enabled = 'true' if (enabled) else 'false'
             role = Config.get('role', 'id')
             role = '<@&' + str(role) + '>' if (role != 0) else 'not set'
-            await self.bot.sendEmbed(ctx, 'Auto-Role', f'Enabled: {enabled}\nRole: {role} \n\n!auto_role [add|remove|enable|disable] <role>', '0', 'neutral')
+            await self.bot.sendEmbed(ctx, 'Auto-Role', f'Enabled: {enabled}\nRole: {role} \n\n!auto_role [set|remove|enable|disable] <role>', '0', 'neutral')
         else:
-            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!auto_role [add|remove|enable|disable] <role>', '0', 'error')
+            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!auto_role [set|remove|enable|disable] <role>', '0', 'error')
     
     @auto_role.command(name='set')
     @commands.has_permissions(administrator = True)
@@ -80,7 +80,7 @@ class UtilityCog(commands.Cog):
             logger.info(f'Auto-role set to <@&{role}>, admin: {ctx.author.id}')
             await self.bot.sendEmbed(ctx, 'Command executed', f'Auto-role set to <@&{role}>', '0', 'success')
         else:
-            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!auto_role [add|remove|enable|disable] <role>', '0', 'error')
+            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!auto_role [set|remove|enable|disable] <role>', '0', 'error')
 
     @auto_role.command(name='remove')
     @commands.has_permissions(administrator = True)
