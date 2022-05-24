@@ -1,6 +1,8 @@
 import discord
 import asyncio
 import logging
+import asyncio
+import datetime
 
 from config import Config
 from discord.ext import commands
@@ -61,9 +63,7 @@ class UtilityCog(commands.Cog):
         flag = 0
         if (role != None):
             if (role.startswith('<@&')):
-                print(role)
                 role = role[3:-1]
-                print(role)
 
             if (role.isdigit()):
                 role = int(role)
@@ -107,6 +107,59 @@ class UtilityCog(commands.Cog):
         logger.info(f'Auto-role disabled, admin={ctx.author.id}')
         await self.bot.sendEmbed(ctx, 'Command executed', f'Auto-role disabled', '0', 'success')
 
+    ###################################
+    ##       Command Join-leave       ##
+    ###################################
+    @commands.group(name='join-leave', invoke_without_command='True')
+    @commands.has_permissions(administrator = True)
+    @commands.guild_only()
+    async def join_leave(self, ctx, arg = None):
+        if (arg == None):
+            enabled = Config.get('greetings', 'enabled')
+            enabled = 'true' if (enabled) else 'false'
+            channel = Config.get('greetings', 'id')
+            channel = '<#' + str(channel) + '>' if (channel != 0) else 'not set'
+            await self.bot.sendEmbed(ctx, 'Join-Leave', f'Enabled: {enabled}\nChannel: {channel} \n\n!join-leave [channel|enable|disable] #<channel>', '0', 'neutral')
+        else:
+            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!join-leave [channel|enable|disable] #<channel>', '0', 'error')
+
+    @join_leave.command(name='enable')
+    @commands.has_permissions(administrator = True)
+    @commands.guild_only()
+    async def join_leave_enable(self, ctx):
+        Config.set('greetings', 'enabled', 1)
+        logger.info(f'Join-leave enabled, admin={ctx.author.id}')
+        await self.bot.sendEmbed(ctx, 'Command executed', f'Join-leave enabled', '0', 'success')
+    
+    @join_leave.command(name='disable')
+    @commands.has_permissions(administrator = True)
+    @commands.guild_only()
+    async def join_leave_disable(self, ctx):
+        Config.set('greetings', 'enabled', 0)
+        logger.info(f'Join-leave disabled, admin={ctx.author.id}')
+        await self.bot.sendEmbed(ctx, 'Command executed', f'Join-leave disabled', '0', 'success')
+
+    @join_leave.command(name='channel')
+    @commands.has_permissions(administrator = True)
+    @commands.guild_only()
+    async def join_leave_channel(self, ctx, channel: str = None):
+        if (channel == None):
+            await self.bot.sendEmbed(ctx, 'Join-Leave', f'Channel: <#{channel}> \n\n!join-leave [channel|enable|disable] #<channel>', '0', 'neutral')
+            return
+        if not (channel.startswith('<#')):
+            await self.bot.sendEmbed(ctx, 'Error', 'Incorrect using of command, see example:\n\n!join-leave [channel|enable|disable] #<channel>', '0', 'error')
+            return
+        channel = channel[2:-1]
+        Config.set('greetings', 'id', int(channel))
+        logger.info(f'Join-leave channel set to {channel}, admin={ctx.author.id}')
+        logsChannel = self.bot.get_channel(int(channel))
+        embed = discord.Embed(title = f'Join-Leave', color = Config.getColor('success'))
+        embed.set_author(name="Advanced Manager", icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
+        embed.description = 'This channel is now using for join-leave logs'
+        embed.set_footer(text='GameSpace#Private \u200b')
+        embed.timestamp = timestamp=datetime.datetime.utcnow()
+        await logsChannel.send(embed= embed)
+        await self.bot.sendEmbed(ctx, 'Command executed', f'Join-leave channel set to <#{channel}>', '0', 'success')
 
     ###################################
     ##          Command Ping         ##
