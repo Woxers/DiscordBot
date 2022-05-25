@@ -70,4 +70,3 @@ class WelcomeCog(commands.Cog):
         embed.timestamp = datetime.datetime.utcnow()
         print('send')
         await logsChannel.send(embed= embed)
-        

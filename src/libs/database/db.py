@@ -139,3 +139,5 @@ class Database:
             return -1
 
 db = Database()
+db.update_reg_date(222746438814138368)
+

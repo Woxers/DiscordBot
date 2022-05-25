@@ -15,6 +15,12 @@ class UtilityCog(commands.Cog):
         self.config = Config()
         logger.info('Connecting Utility module')
 
+    @commands.group(name='test1', invoke_without_command='True')
+    @commands.has_permissions(administrator = True)
+    @commands.guild_only()
+    async def test1(self, ctx, arg = None):
+        await self.bot.get_cog('VerificationCog').new_player_message(ctx.author)
+
     ###################################
     ##      Command Target-guild     ##
     ###################################

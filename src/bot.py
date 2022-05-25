@@ -8,7 +8,7 @@ from config import Config
 
 import log
 
-from modules import WelcomeCog, UtilityCog, CustomHelpCommand
+from modules import WelcomeCog, UtilityCog, CustomHelpCommand, VerificationCog
 from libs import Database
 
 class CustomBot(commands.Bot):
@@ -29,6 +29,7 @@ class CustomBot(commands.Bot):
     def setupCogs(self):
         self.add_cog(UtilityCog(self))
         self.add_cog(WelcomeCog(self))
+        self.add_cog(VerificationCog(self))
 
     async def sendEmbed(self, ctx, title = None, description = None, duration = None, color = None):
         embed = discord.Embed(title = f'{title}', color = Config.getColor(color))
