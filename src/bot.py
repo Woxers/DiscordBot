@@ -11,6 +11,8 @@ from config import Config
 import log
 
 class CustomBot(commands.Bot):
+    __invites = None
+
     def __init__(self):
         helpCommand = CustomHelpCommand()
         intents = discord.Intents.all()

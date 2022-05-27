@@ -38,7 +38,6 @@ class Database:
             cls.__instance = super(Database, cls).__new__(cls)
             cls.__connection = cls.create_connection()
             tableList = cls.execute_query(''' SHOW TABLES; ''')
-            print(tableList)
             if (len(tableList) == 0):
                 print('There are no tables, create new')
                 logger.warning('MYSQL Create new tables')
