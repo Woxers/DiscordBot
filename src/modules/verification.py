@@ -12,10 +12,7 @@ logger = logging.getLogger(__name__)
 class VerificationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config()
         logger.info('Connecting Verification module')
-
-    
     
     # Отправляет сообщение о новом игроке
     async def new_player_message(self, member: discord.Member):
@@ -32,3 +29,6 @@ class VerificationCog(commands.Cog):
         embed.set_footer(text='GameSpace#Private \u200b', icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
         embed.timestamp = timestamp=datetime.datetime.utcnow()
         await playersChannel.send(embed= embed)
+
+def setup(bot):
+    bot.add_cog(VerificationCog(bot))

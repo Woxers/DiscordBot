@@ -1,26 +1,30 @@
 create_status_table = """
-CREATE TABLE IF NOT EXISTS status (
-    Name        STRING NOT NULL
-                       UNIQUE
-                       PRIMARY KEY,
-    Description STRING NOT NULL
-                       DEFAULT ('Описания нет') 
+create table if not exists status
+(
+    Name        varchar(20)  not null,
+    Description varchar(256) null,
+    constraint status_Name_uindex
+        unique (Name)
 );
 """
 
 create_users_table = """
-CREATE TABLE IF NOT EXISTS users (
-    DiscordID      INT            PRIMARY KEY,
-    Status                        REFERENCES status (Name) 
-                                  NOT NULL
-                                  DEFAULT ('JOINED'),
-    JoinedDatetime DATETIME       NOT NULL,
-    Name           STRING (1, 32),
-    Nickname       STRING (3, 32) UNIQUE,
-    RegDatetime    DATETIME
-);
-
-"""
+create table if not exists users
+(
+    DiscordID      int                          not null
+        primary key,
+    Status         varchar(20) default 'JOINED' not null,
+    JoinedDatetime datetime                     not null,
+    Name           varchar(32)                  null,
+    Nickname       varchar(32)                  null,
+    RegDatetime    datetime                     null,
+    constraint users_DiscordID_uindex
+        unique (DiscordID),
+    constraint users_Nickname_uindex
+        unique (Nickname),
+    constraint Status
+        foreign key (Status) references status (Name)
+);"""
 
 insert_status = """
 INSERT INTO

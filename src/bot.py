@@ -1,15 +1,14 @@
+import os
 import discord
 import asyncio
 import logging
 import datetime
 
 from discord.ext import commands
+from help import CustomHelpCommand
 from config import Config
 
 import log
-
-from modules import WelcomeCog, UtilityCog, CustomHelpCommand, VerificationCog
-from libs import Database
 
 class CustomBot(commands.Bot):
     def __init__(self):
@@ -27,17 +26,17 @@ class CustomBot(commands.Bot):
             await self.sendEmbed(ctx, 'Command not found', None, 3, 'error')
 
     def setupCogs(self):
-        self.add_cog(UtilityCog(self))
-        self.add_cog(WelcomeCog(self))
-        self.add_cog(VerificationCog(self))
+        for filename in os.listdir('./modules'):
+            if filename.endswith('.py') and not filename.startswith('__'):
+                self.load_extension(f'modules.{filename[:-3]}')
+                print(f'load: {filename[:-3]}')
+            else:
+                print(f'Unable to load {filename[:-3]}')
 
-    async def sendEmbed(self, ctx, title = None, description = None, duration = None, color = None):
+    async def sendEmbed(self, ctx, title = None, description = None, duration = 0, color = None):
         embed = discord.Embed(title = f'{title}', color = Config.getColor(color))
-        #embed.set_author(name="Advanced Manager", icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
         if (description != None):
             embed.description = description
-        #embed.set_footer(text='GS#Private - Vanilla MC \u200b')
-        #embed.timestamp = timestamp=datetime.datetime.utcnow()
         msg = await ctx.send(embed = embed)
         if (duration > 0):
             await asyncio.sleep(duration)

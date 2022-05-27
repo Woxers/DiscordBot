@@ -1,5 +1,4 @@
 import discord
-import asyncio
 import logging
 import asyncio
 import datetime
@@ -173,8 +172,6 @@ class UtilityCog(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator = True)
     async def ping(self, ctx):
-        logger.info('Ping')
-        logger.error('Ping')
         msg = await ctx.send(f'pong in {round(self.bot.latency * 1000)} ms!')
         await asyncio.sleep(5)
         await msg.delete()
@@ -186,3 +183,6 @@ class UtilityCog(commands.Cog):
         msg = await ctx.send(embed = discord.Embed(description = f'{error}', color = int(Config.get('embed', 'accent_color'), 16)))
         await asyncio.sleep(5)
         await msg.delete()
+
+def setup(bot):
+    bot.add_cog(UtilityCog(bot))
