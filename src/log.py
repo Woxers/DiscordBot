@@ -12,5 +12,5 @@ if platform == "linux" or platform == "linux2":
 else:
     path = Config.get('log', 'path') + 'latest.log'
 
-logging.basicConfig(filename=path, filemode='w',format='[%(asctime)s] [%(levelname)s]: %(message)s', datefmt='%y-%m-%d %H:%M:%S', encoding='utf-8', level=20)
+logging.basicConfig(filename=path, filemode='w',format='[%(asctime)s] [%(levelname)s]: %(message)s', datefmt='%y-%m-%d %H:%M:%S', level=20)
 logging.info('Start logging')
