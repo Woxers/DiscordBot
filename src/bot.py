@@ -32,13 +32,13 @@ class CustomBot(commands.Bot):
             await self.sendEmbed(ctx, 'Command not found', None, 3, 'error')
 
     def setupCogs(self):
-        for filename in os.listdir('./modules'):
-            if platform == "linux" or platform == "linux2":
-                self.add_cog(OwnerCog(self))
-                self.add_cog(VerificationCog(self))
-                self.add_cog(WelcomeCog(self))
-                self.add_cog(UtilityCog(self))
-            else:
+        if platform == "linux" or platform == "linux2":
+            self.add_cog(OwnerCog(self))
+            self.add_cog(VerificationCog(self))
+            self.add_cog(WelcomeCog(self))
+            self.add_cog(UtilityCog(self))
+        else:
+            for filename in os.listdir('./modules'):
                 if filename.endswith('.py') and not filename.startswith('__'):
                     self.load_extension(f'modules.{filename[:-3]}')
                     print(f'load: {filename[:-3]}')
