@@ -1,5 +1,6 @@
 import json
 import os.path
+from sys import platform
 
 # Singleton 
 class Config():
@@ -9,7 +10,10 @@ class Config():
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(Config, cls).__new__(cls)
-            path = os.getcwd() + '\data\settings.json'
+            if platform == "linux" or platform == "linux2":
+                path = '/home/testuser/settings.json'
+            else:
+                path = os.getcwd() + '\data\settings.json'
             with open(path, 'r', encoding='utf-8') as settings:
                 cls.__json_string=json.load(settings)
             settings.close()
