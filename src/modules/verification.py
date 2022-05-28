@@ -18,7 +18,7 @@ class VerificationCog(commands.Cog):
     ##      Verification Status      ##
     ###################################
     @commands.command(name='status')
-    @commands.has_permissions(administrator = True)
+    @commands.has_role("Interviewer")
     async def status(self, ctx, id: int):
         status = Database.get_status(id)
         print(status)
@@ -57,7 +57,7 @@ class VerificationCog(commands.Cog):
     ##        Force-Confirm          ##
     ###################################
     @commands.command(name='force-confirm')
-    @commands.has_permissions(administrator = True)
+    @commands.has_role("Interviewer")
     async def force_confirm(self, ctx, id: int = None):
         invitedList = Database.get_all_invited()
         if (id == None):

@@ -120,7 +120,7 @@ class WelcomeCog(commands.Cog):
         stroke = ''
         stroke += f'По вашему приглашению `{invite.code}` присоединился новый пользователь. Готовы ли вы за него поручиться? В таком случае игрок пройдет регистрацию в упрощенном формате.'
         stroke += f'\n\n*Пользователь* ID: `{member.id}` - {member.mention}'
-        stroke += f'\n\nЧтобы поручиться за пользователя введите: `/confirm ID`'
+        stroke += f'\n\nЧтобы поручиться за пользователя введите: `!confirm ID`'
         embed.description = stroke
         embed.set_footer(text=f'Total Invited: {invite.uses} \u200b')
         embed.title = 'Приглашен игрок!'
