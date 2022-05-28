@@ -62,6 +62,7 @@ class WelcomeCog(commands.Cog):
             if not member.bot:
                 print('Заносим нового пользователя в базу')
                 Database.add_user(member.id, inviter.id, str(inviteCode))
+                await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
                 logger.info(f'Added new player to database: {member.id}')
 
         # Adding auto-role

@@ -136,14 +136,29 @@ class Database:
     @classmethod
     def get_invited(cls, id):
         return cls.execute_query(f''' SELECT DiscordID FROM users WHERE InviterId = {id} AND Confirmed = 0 ''')
+    
+    # Get all not confirmed invited players
+    @classmethod
+    def get_all_invited(cls):
+        return cls.execute_query(f''' SELECT DiscordID FROM users WHERE Confirmed = 0 ''')
+
+    # Get current user status
+    @classmethod
+    def get_status(cls, id):
+        if cls.check_user(id): 
+            return cls.execute_query(f'''  SELECT Name, Description FROM status WHERE EXISTS (SELECT Status FROM users WHERE status.Name = users.Status AND users.DiscordID = {id}) ''')
+        else:
+            logger.error(f'The error in set_nickname occured, No player with such ID: {id}')
+        return None
 
     # Confirm player
     @classmethod
-    def confirm(cls, id: int):
-        if (cls.check_user(id)):
-            user = cls.get_user(id)
+    def confirm(cls, confirmatorId: int , userId: int):
+        if (cls.check_user(userId)):
+            user = cls.get_user(userId)
             if not (user[0][8]):
-                cls.execute_query(f''' UPDATE users SET Confirmed=1 WHERE DiscordID={id} ''')
+                cls.execute_query(f''' UPDATE users SET Confirmed=1 WHERE DiscordID={userId} ''')
+                cls.execute_query(f''' UPDATE users SET ConfirmatorID={confirmatorId} WHERE DiscordID={userId} ''')
                 return 1
             else:
                 return 0
