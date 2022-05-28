@@ -7,6 +7,10 @@ import datetime
 from discord.ext import commands
 from help import CustomHelpCommand
 from config import Config
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+    from modules import VerificationCog, WelcomeCog, OwnerCog, UtilityCog
 
 import log
 
@@ -29,11 +33,17 @@ class CustomBot(commands.Bot):
 
     def setupCogs(self):
         for filename in os.listdir('./modules'):
-            if filename.endswith('.py') and not filename.startswith('__'):
-                self.load_extension(f'modules.{filename[:-3]}')
-                print(f'load: {filename[:-3]}')
+            if platform == "linux" or platform == "linux2":
+                self.add_cog(OwnerCog(self))
+                self.add_cog(VerificationCog(self))
+                self.add_cog(WelcomeCog(self))
+                self.add_cog(UtilityCog(self))
             else:
-                print(f'Unable to load {filename[:-3]}')
+                if filename.endswith('.py') and not filename.startswith('__'):
+                    self.load_extension(f'modules.{filename[:-3]}')
+                    print(f'load: {filename[:-3]}')
+                else:
+                    print(f'Unable to load {filename[:-3]}')
 
     async def sendEmbed(self, ctx, title = None, description = None, duration = 0, color = None):
         embed = discord.Embed(title = f'{title}', color = Config.getColor(color))

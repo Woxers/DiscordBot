@@ -5,6 +5,7 @@ import logging
 from config import Config
 from libs import Database
 from discord.ext import commands
+from sys import platform
 
 logger = logging.getLogger(__name__)
 
