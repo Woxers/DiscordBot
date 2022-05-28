@@ -13,6 +13,31 @@ class VerificationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         logger.info('Connecting Verification module')
+
+    ###################################
+    ##             Confirm           ##
+    ###################################
+    @commands.command(name='confirm')
+    async def confirm(self, ctx, id: int = None):
+        invitedList = Database.get_invited(ctx.author.id)
+        if (id == None):
+            if (invitedList == ()):
+                stroke = 'Все приглашения обработаны.'
+            else:
+                stroke = '***Список приглашенных пользователей:***\n'
+                for invited in invitedList:
+                    stroke += f'ID: `{invited[0]}` - {self.bot.get_user(int(invited[0])).mention}\n'
+            await ctx.send(stroke)
+            return
+        if (invitedList == ()):
+            await ctx.send(f'Пользователь либо не существует, либо уже подтвержден.')
+            return
+        for invited in invitedList:
+            if invited[0] == id:
+                if (Database.confirm(id)):
+                    await ctx.send(f'Вы поручились за пользователя {self.bot.get_user(id).mention}!')
+                    return
+        await ctx.send(f'Пользователь либо не существует, либо уже подтвержден.')
     
     # Отправляет сообщение о новом игроке
     async def new_player_message(self, member: discord.Member):

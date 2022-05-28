@@ -27,6 +27,16 @@ class WelcomeCog(commands.Cog):
         self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
         print("WelcomeCog Listener on ready")
 
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite):
+        print(f'New invite {invite.code}')
+        self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
+    
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        print(f'Delete invite {invite.code}')
+        self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
+
     #####################################
     ##           MEMBER JOIN           ##
     #####################################
@@ -44,14 +54,14 @@ class WelcomeCog(commands.Cog):
                 inviteCode = invite.code
                 inviter = invite.inviter
                 self.bot.__invites = invites_after_join
+                await self.sendInviterMessage(member, inviter, invite)
                 break
-
-        await inviter.send(f'По вашему инвайту зашел новый пользователь: {member}')
 
         # Addind user to database
         if not (Database.check_user(member.id)):
             if not member.bot:
-                Database.add_user(member.id)
+                print('Заносим нового пользователя в базу')
+                Database.add_user(member.id, inviter.id, str(inviteCode))
                 logger.info(f'Added new player to database: {member.id}')
 
         # Adding auto-role
@@ -103,6 +113,18 @@ class WelcomeCog(commands.Cog):
         for inv in invite_list:
             if inv.code == code:
                 return inv
+
+    async def sendInviterMessage(self, member: discord.user, inviter: discord.user, invite: discord.invite):
+        embed = discord.Embed(color = Config.getColor('neutral'))
+        stroke = ''
+        stroke += f'По вашему приглашению `{invite.code}` присоединился новый пользователь. Готовы ли вы за него поручиться? В таком случае игрок пройдет регистрацию в упрощенном формате.'
+        stroke += f'\n\n*Пользователь* ID: `{member.id}` - {member.mention}'
+        stroke += f'\n\nЧтобы поручиться за пользователя введите: `/confirm ID`'
+        embed.description = stroke
+        embed.set_footer(text=f'Total Invited: {invite.uses} \u200b')
+        embed.title = 'Приглашен игрок!'
+        embed.timestamp = datetime.datetime.utcnow()
+        await inviter.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(WelcomeCog(bot))

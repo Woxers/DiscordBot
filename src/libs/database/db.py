@@ -75,16 +75,16 @@ class Database:
     
     # Check user
     @classmethod
-    def check_user(cls, id: int):
-        result = cls.execute_query(f'''SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = '{id}') = 1 THEN 1 ELSE 0 END''')
+    def check_user(cls, userId: int):
+        result = cls.execute_query(f'''SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = {userId}) = 1 THEN 1 ELSE 0 END''')
         return 1 if (result[0][0] == 1) else 0
 
     # Add a new user
     @classmethod
-    def add_user(cls, id: int):
+    def add_user(cls, id: int, inviterId: int = None, inviteCode: str = None):
         ts = time.time()
         now = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        if (cls.execute_query(f''' INSERT INTO users (DiscordID, JoinedDatetime) VALUES ({id}, '{now}') ''')):
+        if (cls.execute_query(f''' INSERT INTO users (DiscordID, JoinedDatetime, InviterId, InviteCode) VALUES ({id}, '{now}', {inviterId}, '{inviteCode}') ''')):
             return 1
         return 0
 
@@ -130,6 +130,32 @@ class Database:
                 logger.error(f'The error in set_nickname occured, No player with such ID: {id}')
         else:
             logger.error(f'The error in set_nickname occured, Invalid nickname: {nickname}')
+        return 0
+
+    # Get not confirmed invited players
+    @classmethod
+    def get_invited(cls, id):
+        return cls.execute_query(f''' SELECT DiscordID FROM users WHERE InviterId = {id} AND Confirmed = 0 ''')
+
+    # Confirm player
+    @classmethod
+    def confirm(cls, id: int):
+        if (cls.check_user(id)):
+            user = cls.get_user(id)
+            if not (user[0][8]):
+                cls.execute_query(f''' UPDATE users SET Confirmed=1 WHERE DiscordID={id} ''')
+                return 1
+            else:
+                return 0
+        return 0
+
+    # Set joined date
+    @classmethod
+    def set_joined_date(cls, id, date):
+        if cls.check_user(id): 
+            cls.execute_query(f''' UPDATE users SET JoinedDatetime="{date}" WHERE DiscordID={id} ''')
+        else:
+            logger.error(f'The error in set_joined_date occured, No player with such ID: {id}')
         return 0
     
     # Update registration date
