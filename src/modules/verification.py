@@ -21,7 +21,6 @@ class VerificationCog(commands.Cog):
     @commands.has_role("Interviewer")
     async def status(self, ctx, id: int):
         status = Database.get_status(id)
-        print(status)
         if (type(status) != None):
             embed = discord.Embed(color = Config.getColor('success'))
             embed.description = f'***Пользователь:*** {self.bot.get_user(id).mention}\n***Статус:*** {status[0][0]}\n***Описание:*** {status[0][1]}\n'
@@ -97,7 +96,7 @@ class VerificationCog(commands.Cog):
         #embed.description = stroke
         #embed.set_footer(text='GameSpace#Private \u200b', icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
         #embed.timestamp = timestamp=datetime.datetime.utcnow()
-        await self.bot.sendEmbed(playersChannel, description=stroke, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True)
+        await self.bot.send_embed(playersChannel, description=stroke, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True)
         #await playersChannel.send(embed= embed)
 
     # Отправляет сообщение о неподтвержденном игроке
@@ -105,7 +104,7 @@ class VerificationCog(commands.Cog):
         description = f'Пользователь {member.mention} присоединился к серверу! Пока за него никто не поручился.\n'
         verificationChannel = self.bot.get_channel(Config.get('verification', 'channel'))
         #await verificationChannel.send(embed= embed)
-        await self.bot.sendEmbed(verificationChannel, description=description, color='neutral')
+        await self.bot.send_embed(verificationChannel, description=description, color='neutral')
 
     # Обработка события появления нового подтвержденного пользователя
     async def new_confirmed_player(self, member: discord.Member):
@@ -116,7 +115,7 @@ class VerificationCog(commands.Cog):
         description = f'{confirmator.mention} поручился за {member.mention}! Приступаем к формированию анкеты.\n'
         verificationChannel = self.bot.get_channel(Config.get('verification', 'channel'))
         #await verificationChannel.send(embed= embed)
-        await self.bot.sendEmbed(verificationChannel, description=description, color='success')
+        await self.bot.send_embed(verificationChannel, description=description, color='success')
 
 def setup(bot):
     bot.add_cog(VerificationCog(bot))

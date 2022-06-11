@@ -55,9 +55,9 @@ class WelcomeCog(commands.Cog):
         # Addind user to database
         if not (Database.check_user(member.id)):
             if not member.bot:
-                print('Заносим нового пользователя в базу')
+                print('Add new player to database')
                 Database.add_user(member.id, inviter.id, str(inviteCode))
-                await self.sendInviterMessage(member, inviter, invite)
+                await self.send_invite_message(member, inviter, invite)
                 await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
                 logger.info(f'Added new player to database: {member.id}')
 
@@ -88,7 +88,7 @@ class WelcomeCog(commands.Cog):
     #####################################
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        print(f'player left: {member.mention}')
+        print(f'Player left: {member.mention}')
 
         # Message to log channel
         if not (Config.get('greetings', 'enabled')):
@@ -111,7 +111,7 @@ class WelcomeCog(commands.Cog):
             if inv.code == code:
                 return inv
 
-    async def sendInviterMessage(self, member: discord.user, inviter: discord.user, invite: discord.invite):
+    async def send_invite_message(self, member: discord.user, inviter: discord.user, invite: discord.invite):
         embed = discord.Embed(color = Config.getColor('neutral'))
         stroke = ''
         stroke += f'По вашему приглашению `{invite.code}` присоединился новый пользователь. Готовы ли вы за него поручиться? В таком случае игрок пройдет регистрацию в упрощенном формате.'

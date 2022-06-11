@@ -5,4 +5,5 @@ __pycache__
 # Файлы
 *.log
 *.db
+*.code-workspace
 settings.json

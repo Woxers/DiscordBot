@@ -23,7 +23,7 @@ class OwnerCog(commands.Cog):
                 self.bot.load_extension(extension)
         print('reloaded')
         logger.warning('All extensions are reloaded!')
-        await self.bot.sendEmbed(ctx, title='Command executed', description='All extensions are reloaded!', color='success')
+        await self.bot.send_embed(ctx.channel, title='Command executed', description='All extensions are reloaded!', color='success')
 
     @commands.command(name='upd-players')
     @commands.is_owner()

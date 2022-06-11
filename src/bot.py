@@ -21,29 +21,29 @@ class CustomBot(commands.Bot):
         intents = discord.Intents.all()
         super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand, intents=intents)
         intents.members = True
-        self.setupCogs()
+        self.setup_cogs()
 
     async def on_ready(self): 
         await self.upd_invites()
         print('Bot connected successfully!')
 
-    # Ошибка команда не найдена
+    # Error command not found
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            await self.sendEmbed(ctx, 'Command not found', None, 3, 'error')
+            await self.send_embed(ctx, 'Command not found', None, 3, 'error')
 
-    # Подключаем модули
-    def setupCogs(self):
+    # Connectins extensions
+    def setup_cogs(self):
+        print('Starting load extensions...')
         for filename in listdir('/home/aptem/VScodeRep/DiscordBot/src/modules'):
             if filename.endswith('.py') and not filename.startswith('__'):
                 self.load_extension(f'modules.{filename[:-3]}')
-                print(f'load: {filename[:-3]}')
-            else:
-                print(f'Unable to load {filename[:-3]}')
+                print(f'Load: {filename[:-3]}')
+        print('Done')
 
-    # Функция отправки embed сообщения
-    async def sendEmbed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
-        print('send embed')
+    # Sending embeded message
+    async def send_embed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
+        print(f'Sending embeded message in channel {channel}')
         embed = discord.Embed()
         if (title != None):
             embed.title = title
@@ -64,14 +64,13 @@ class CustomBot(commands.Bot):
             await asyncio.sleep(duration)
             await msg.delete()
     
-    # Поулчить существующие инвайты
+    # Get all existing invites
     def get_invites(self):
         return self.__invites
 
-    # Обновить список инвайтов
+    # Update invites list
     async def upd_invites(self):
         self.__invites = await self.get_guild(Config.get('guild', 'id')).invites()
-        
 
 bot = CustomBot()
 
