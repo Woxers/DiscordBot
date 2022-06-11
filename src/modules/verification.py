@@ -88,33 +88,35 @@ class VerificationCog(commands.Cog):
     async def new_player_message(self, member: discord.Member):
         user = Database.get_user(member.id)
         stroke = f':small_orange_diamond: Никнейм: {user[0][4]}\n'
-        stroke += f':small_orange_diamond: Реально имя: {user[0][3]}\n'
+        stroke += f':small_orange_diamond: Реальное имя: {user[0][3]}\n'
         regDate = user[0][5].split(' ')
         stroke += f':small_orange_diamond: Дата регистрации: {regDate[0]}\n'
         stroke += f':small_blue_diamond: Дискорд: {member.mention}'
         playersChannel = self.bot.get_channel(Config.get('profile', 'channel'))
-        embed = discord.Embed(color = Config.getColor('neutral'))
-        embed.description = stroke
-        embed.set_footer(text='GameSpace#Private \u200b', icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
-        embed.timestamp = timestamp=datetime.datetime.utcnow()
-        await playersChannel.send(embed= embed)
+        #embed = discord.Embed(color = Config.getColor('neutral'))
+        #embed.description = stroke
+        #embed.set_footer(text='GameSpace#Private \u200b', icon_url="https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702")
+        #embed.timestamp = timestamp=datetime.datetime.utcnow()
+        await self.bot.sendEmbed(playersChannel, description=stroke, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True)
+        #await playersChannel.send(embed= embed)
 
     # Отправляет сообщение о неподтвержденном игроке
     async def new_unconfirmed_player(self, member: discord.Member):
-        embed = discord.Embed(color = Config.getColor('neutral'))
-        embed.description = f'Пользователь {member.mention} присоединился к серверу! Пока за него никто не поручился.\n'
+        description = f'Пользователь {member.mention} присоединился к серверу! Пока за него никто не поручился.\n'
         verificationChannel = self.bot.get_channel(Config.get('verification', 'channel'))
-        await verificationChannel.send(embed= embed)
+        #await verificationChannel.send(embed= embed)
+        await self.bot.sendEmbed(verificationChannel, description=description, color='neutral')
 
     # Обработка события появления нового подтвержденного пользователя
     async def new_confirmed_player(self, member: discord.Member):
         user = Database.get_user(member.id)
         Database.set_status(member.id, 'INTERVIE')
         confirmator = self.bot.get_user(user[0][9])
-        embed = discord.Embed(color = Config.getColor('success'))
-        embed.description = f'{confirmator.mention} поручился за {member.mention}! Приступаем к формированию анкеты.\n'
+        #embed = discord.Embed(color = Config.getColor('success'))
+        description = f'{confirmator.mention} поручился за {member.mention}! Приступаем к формированию анкеты.\n'
         verificationChannel = self.bot.get_channel(Config.get('verification', 'channel'))
-        await verificationChannel.send(embed= embed)
+        #await verificationChannel.send(embed= embed)
+        await self.bot.sendEmbed(verificationChannel, description=description, color='success')
 
 def setup(bot):
     bot.add_cog(VerificationCog(bot))

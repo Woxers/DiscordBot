@@ -1,4 +1,5 @@
 import datetime
+from pydoc import describe
 import discord
 import logging
 
@@ -15,28 +16,22 @@ class WelcomeCog(commands.Cog):
         self.config = Config()
         logger.info('Connecting Welcome module')
 
-    @commands.command()
-    @commands.is_owner()
-    async def invites(self, ctx):
-        inv = 'Список инвайтов:\n'
-        for invite in self.bot.__invites:
-            inv += f'{str(invite)[19:]} - Владелец {invite.inviter}\n'
-        await ctx.send(inv)
-
     @commands.Cog.listener()
     async def on_ready(self):
-        self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
+        await self.bot.upd_invites()
         print("WelcomeCog Listener on ready")
 
+    # Ивент создание инвайта
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
         print(f'New invite {invite.code}')
-        self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
+        await self.bot.upd_invites()
     
+    # Событие удаление инвайта
     @commands.Cog.listener()
     async def on_invite_delete(self, invite):
         print(f'Delete invite {invite.code}')
-        self.bot.__invites = await self.bot.get_guild(Config.get('guild', 'id')).invites()
+        await self.bot.upd_invites()
 
     #####################################
     ##           MEMBER JOIN           ##
@@ -46,7 +41,7 @@ class WelcomeCog(commands.Cog):
         print(f'player joined: {member.mention}')
 
         # Who invited
-        invites_before_join = self.bot.__invites
+        invites_before_join = self.bot.get_invites()
         invites_after_join = await member.guild.invites()
         inviteCode = None
         inviter = None
@@ -54,7 +49,7 @@ class WelcomeCog(commands.Cog):
             if invite.uses < self.find_invite_by_code(invites_after_join, invite.code).uses:
                 inviteCode = invite.code
                 inviter = invite.inviter
-                self.bot.__invites = invites_after_join
+                self.bot.upd_invites()
                 break
 
         # Addind user to database

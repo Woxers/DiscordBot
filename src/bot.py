@@ -24,6 +24,7 @@ class CustomBot(commands.Bot):
         self.setupCogs()
 
     async def on_ready(self): 
+        await self.upd_invites()
         print('Bot connected successfully!')
 
     # Ошибка команда не найдена
@@ -42,16 +43,15 @@ class CustomBot(commands.Bot):
 
     # Функция отправки embed сообщения
     async def sendEmbed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
+        print('send embed')
         embed = discord.Embed()
         if (title != None):
             embed.title = title
         if (description != None):
             embed.description = description
         if (color != None):
-            embed.color = color
+            embed.color = Config.getColor(color)
         if (footer_text != None) or (footer_icon != None):
-            print(footer_text)
-            print(footer_icon)
             embed.set_footer(text = footer_text, icon_url= footer_icon)
         if (author_name != None or author_icon != None):
             embed.set_author(name=author_name, icon_url=author_icon)
@@ -63,6 +63,15 @@ class CustomBot(commands.Bot):
         if (duration != None):
             await asyncio.sleep(duration)
             await msg.delete()
+    
+    # Поулчить существующие инвайты
+    def get_invites(self):
+        return self.__invites
+
+    # Обновить список инвайтов
+    async def upd_invites(self):
+        self.__invites = await self.get_guild(Config.get('guild', 'id')).invites()
+        
 
 bot = CustomBot()
 

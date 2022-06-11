@@ -11,11 +11,6 @@ class OwnerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='sendEmbed')
-    @commands.is_owner()
-    async def sendEmb(self, ctx):
-        await self.bot.sendEmbedd(ctx.channel, title = 'Title', description = 'Description', duration = 5, color = Config.getColor('success'), footer_text = 'Footer_Text', footer_icon = 'https://media.discordapp.net/attachments/920332218403029023/980488139808329798/4e026f6f0263bf91902a5575a6f0360c.jpg?width=702&height=702', author_name = 'author', author_icon = 'https://media.discordapp.net/attachments/920332218403029023/980488139808329798/4e026f6f0263bf91902a5575a6f0360c.jpg?width=702&height=702', timestamp = True)
-
     @commands.command(name='reload')
     @commands.is_owner()
     async def reload(self, ctx):
@@ -28,7 +23,7 @@ class OwnerCog(commands.Cog):
                 self.bot.load_extension(extension)
         print('reloaded')
         logger.warning('All extensions are reloaded!')
-        await self.bot.sendEmbed(ctx, 'Command executed', 'All extensions are reloaded!', '0', 'success')
+        await self.bot.sendEmbed(ctx, title='Command executed', description='All extensions are reloaded!', color='success')
 
     @commands.command(name='upd-players')
     @commands.is_owner()
