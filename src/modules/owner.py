@@ -11,6 +11,11 @@ class OwnerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(name='sendEmbed')
+    @commands.is_owner()
+    async def sendEmb(self, ctx):
+        await self.bot.sendEmbedd(ctx.channel, title = 'Title', description = 'Description', duration = 5, color = Config.getColor('success'), footer_text = 'Footer_Text', footer_icon = 'https://media.discordapp.net/attachments/920332218403029023/980488139808329798/4e026f6f0263bf91902a5575a6f0360c.jpg?width=702&height=702', author_name = 'author', author_icon = 'https://media.discordapp.net/attachments/920332218403029023/980488139808329798/4e026f6f0263bf91902a5575a6f0360c.jpg?width=702&height=702', timestamp = True)
+
     @commands.command(name='reload')
     @commands.is_owner()
     async def reload(self, ctx):
@@ -33,12 +38,13 @@ class OwnerCog(commands.Cog):
         guild = self.bot.get_guild(Config.get('guild', 'id'))
         for member in guild.members:
             if not (member.bot):
+                print(member.id)
                 if not (Database.check_user(member.id)):
                     print('Заносим нового пользователя в базу')
                     stroke += f'{member}\n'
                     Database.add_user(member.id, 222746438814138368, 'YhVsknp')
                     Database.set_status(member.id, 'CONFIRMED')
-                    Database.confirm(member.id)
+                    Database.confirm(222746438814138368, member.id)
                     logger.info(f'Added new player to database: {member.id}')
         await ctx.send(stroke)
     

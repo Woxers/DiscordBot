@@ -5,7 +5,7 @@ import logging
 from config import Config
 from libs import Database
 from discord.ext import commands
-from sys import platform
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,6 @@ class WelcomeCog(commands.Cog):
                 inviteCode = invite.code
                 inviter = invite.inviter
                 self.bot.__invites = invites_after_join
-                await self.sendInviterMessage(member, inviter, invite)
                 break
 
         # Addind user to database
@@ -63,6 +62,7 @@ class WelcomeCog(commands.Cog):
             if not member.bot:
                 print('Заносим нового пользователя в базу')
                 Database.add_user(member.id, inviter.id, str(inviteCode))
+                await self.sendInviterMessage(member, inviter, invite)
                 await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
                 logger.info(f'Added new player to database: {member.id}')
 

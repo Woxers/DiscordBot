@@ -11,7 +11,7 @@ class Config():
         if cls.__instance is None:
             cls.__instance = super(Config, cls).__new__(cls)
             if platform == "linux" or platform == "linux2":
-                path = '/home/testuser/settings.json'
+                path = '/home/aptem/VScodeRep/DiscordBot/src/data/settings.json'
             else:
                 path = os.getcwd() + '\data\settings.json'
             with open(path, 'r', encoding='utf-8') as settings:
