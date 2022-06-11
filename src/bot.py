@@ -26,10 +26,12 @@ class CustomBot(commands.Bot):
     async def on_ready(self): 
         print('Bot connected successfully!')
 
+    # Ошибка команда не найдена
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await self.sendEmbed(ctx, 'Command not found', None, 3, 'error')
 
+    # Подключаем модули
     def setupCogs(self):
         for filename in listdir('/home/aptem/VScodeRep/DiscordBot/src/modules'):
             if filename.endswith('.py') and not filename.startswith('__'):
@@ -38,7 +40,8 @@ class CustomBot(commands.Bot):
             else:
                 print(f'Unable to load {filename[:-3]}')
 
-    async def sendEmbedd(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
+    # Функция отправки embed сообщения
+    async def sendEmbed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
         embed = discord.Embed()
         if (title != None):
             embed.title = title
@@ -58,15 +61,6 @@ class CustomBot(commands.Bot):
         msg = await channel.send(embed = embed)
 
         if (duration != None):
-            await asyncio.sleep(duration)
-            await msg.delete()
-
-    async def sendEmbed(self, ctx, title = None, description = None, duration = 0, color = None):
-        embed = discord.Embed(title = f'{title}', color = Config.getColor(color))
-        if (description != None):
-            embed.description = description
-        msg = await ctx.send(embed = embed)
-        if (duration > 0):
             await asyncio.sleep(duration)
             await msg.delete()
 

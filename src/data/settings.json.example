@@ -9,16 +9,35 @@
         "success": "0x538A1B"
     },
     "db": {
-        "name": "aloha.db",
-        "path": "D:/!GitClones/DiscordBot/src/data/",
         "nickname_pattern": "^[a-zA-Z0-9_]{2,24}$",
         "name_pattern": "^[а-яА-ЯёЁ ]{1,32}$"
     },
     "log": {
-        "path": "logs/",
+        "path": "logs/"
     },
-    "server": {
-        "greetings_channel": "",
-        "auto_role": ""
+    "guild": {
+        "id": 508721497360171018
+    },
+    "greetings": {
+        "id": 978724896593027102,
+        "enabled": 1
+    },
+    "role": {
+        "id": 866702039466901524,
+        "enabled": 1
+    },
+    "profile": {
+        "channel": 978975750290038794,
+        "enabled": 0
+    },
+    "mysql": {
+        "host": "", 
+        "user": "", 
+        "passwd": "", 
+        "db": ""
+    },
+    "verification": {
+        "channel": 980101976404664440,
+        "enabled": 1
     }
 }

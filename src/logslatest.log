@@ -1,8 +1,0 @@
-[22-06-10 21:01:14] [INFO]: Start logging
-[22-06-10 21:01:14] [INFO]: Connecting to SQLite DB
-[22-06-10 21:01:15] [INFO]: Connecting Utility module
-[22-06-10 21:01:15] [INFO]: Connecting Welcome module
-[22-06-10 21:01:15] [INFO]: Connecting Verification module
-[22-06-10 21:01:15] [INFO]: logging in using static token
-[22-06-10 21:01:16] [INFO]: Shard ID None has sent the IDENTIFY payload.
-[22-06-10 21:01:16] [INFO]: Shard ID None has connected to Gateway: ["gateway-prd-main-qx01",{"micros":119362,"calls":["discord-sessions-green-prd-2-73",{"micros":118249,"calls":["start_session",{"micros":91148,"calls":["discord-api-7f97c8b56c-mp25j",{"micros":80889,"calls":["get_user",{"micros":10478},"add_authorized_ip",{"micros":2714},"get_guilds",{"micros":4276},"coros_wait",{"micros":1}]}]},"guilds_connect",{"micros":2,"calls":[]},"presence_connect",{"micros":17715,"calls":[]}]}]}] (Session ID: ec744d8ab761a6ddbd0785ad9838f9ee).

@@ -1,8 +1,8 @@
 # Папки
 *build-*
 __pycache__
-logs
 
 # Файлы
+*.log
 *.db
 settings.json
