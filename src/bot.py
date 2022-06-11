@@ -51,10 +51,16 @@ class CustomBot(commands.Bot):
             embed.description = description
         if (color != None):
             embed.color = Config.getColor(color)
-        if (footer_text != None) or (footer_icon != None):
-            embed.set_footer(text = footer_text, icon_url= footer_icon)
-        if (author_name != None or author_icon != None):
-            embed.set_author(name=author_name, icon_url=author_icon)
+        if (footer_text != None):
+            if (footer_icon != None):
+                embed.set_footer(text = footer_text, icon_url= footer_icon)
+            else:
+                embed.set_footer(text = footer_text)
+        if (author_name != None):
+            if (author_icon != None):
+                embed.set_author(name=author_name, icon_url=author_icon)
+            else:
+                embed.set_author(name=author_name)
         if (timestamp == True):
             embed.timestamp = datetime.datetime.utcnow()
         

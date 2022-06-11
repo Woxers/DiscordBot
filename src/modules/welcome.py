@@ -38,7 +38,7 @@ class WelcomeCog(commands.Cog):
     #####################################
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        print(f'player joined: {member.mention}')
+        print(f'Player joined: {member.mention}')
 
         # Who invited
         invites_before_join = self.bot.get_invites()
@@ -49,17 +49,20 @@ class WelcomeCog(commands.Cog):
             if invite.uses < self.find_invite_by_code(invites_after_join, invite.code).uses:
                 inviteCode = invite.code
                 inviter = invite.inviter
-                self.bot.upd_invites()
+                await self.bot.upd_invites()
                 break
 
         # Addind user to database
         if not (Database.check_user(member.id)):
+            newbie = '***NEWBIE***\n'
             if not member.bot:
-                print('Add new player to database')
+                print('Adding new player to database')
                 Database.add_user(member.id, inviter.id, str(inviteCode))
                 await self.send_invite_message(member, inviter, invite)
                 await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
-                logger.info(f'Added new player to database: {member.id}')
+        else:
+            newbie = '**OLD PLAYER**\n'
+            print('Player is not newbie')
 
         # Adding auto-role
         if (Config.get('role', 'enabled')):
@@ -71,17 +74,14 @@ class WelcomeCog(commands.Cog):
         if not (Config.get('greetings', 'enabled')):
             return
         logsChannel = self.bot.get_channel(Config.get('greetings', 'id'))
-        embed = discord.Embed(color = Config.getColor('success'))
         if (member.bot):
-            embed.description = f'Welcome {member.mention}, brother'
+            await self.bot.send_embed(logsChannel, description=f'Welcome {member.mention}, brother' , color='neutral')
         else:
             created = member.created_at
             created = created.strftime('%Y-%m-%d')
-            embed.description = f'Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: {inviter}\nInvite Code: {inviteCode}'
-        embed.set_author(name='User joined!', icon_url=member.avatar_url)
-        embed.set_footer(text=f'GS#Total: {member.guild.member_count} \u200b')
-        embed.timestamp = datetime.datetime.utcnow()
-        await logsChannel.send(embed= embed)
+            description = f'{newbie}Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: {inviter.mention}\nInvite Code: {inviteCode}'
+            footer_text=f'GS#Total: {member.guild.member_count} \u200b'
+            await self.bot.send_embed(logsChannel, color='success', description=description, author_icon=member.avatar_url, author_name='User joined!', footer_text=footer_text, timestamp=True)
 
     #####################################
     ##           MEMBER LEFT           ##
@@ -96,16 +96,14 @@ class WelcomeCog(commands.Cog):
         logsChannel = self.bot.get_channel(Config.get('greetings', 'id'))
         embed = discord.Embed(color = Config.getColor('error'))
         if (member.bot):
-            embed.description = f'Goodbye {member.mention}, brother'
+            await self.bot.send_embed(logsChannel, description=f'Goodbye {member.mention}, brother' , color='neutral')
         else:
             created = member.created_at
             created = created.strftime('%Y-%m-%d')
-            embed.description = f'Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
-        embed.set_author(name='User left!', icon_url=member.avatar_url)
-        embed.set_footer(text=f'GS#Total: {member.guild.member_count} \u200b')
-        embed.timestamp = datetime.datetime.utcnow()
-        await logsChannel.send(embed= embed)
-    
+            description = f'Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
+            footer_text=f'GS#Total: {member.guild.member_count} \u200b'
+            await self.bot.send_embed(logsChannel, color='success', description=description, author_icon=member.avatar_url, author_name='User left!', footer_text=footer_text, timestamp=True)
+
     def find_invite_by_code(self, invite_list, code):
         for inv in invite_list:
             if inv.code == code:
