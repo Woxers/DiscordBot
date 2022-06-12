@@ -2,8 +2,8 @@ from datetime import datetime
 #import time
 import pymysql
 import logging
-#import os.path
-#import sys
+import os.path
+import sys
 import re
 
 logger = logging.getLogger(__name__)
@@ -19,14 +19,16 @@ logger = logging.getLogger(__name__)
 #     from .create_db_sql import create_status_table
 #     from .create_db_sql import create_users_table
 #     from .create_db_sql import insert_status
-#     sys.path.append(os.getcwdb()) 
+
+sys.path.append(os.getcwdb()) 
+from config import Config
 
 # Singleton
 class Database:
     __instance = None
     __connection = None
-    __statusList = []
-    __stagesList = []
+    # __statusList = []
+    # __stagesList = []
 
     def __new__(cls):
         if cls.__instance is None:
@@ -39,14 +41,12 @@ class Database:
             #     # cls.execute_query(create_status_table)
             #     # cls.execute_query(create_users_table)
             #     # cls.execute_query(insert_status)
-            statusList = cls.execute_query('CALL GetStatuses()')
-            stagesList = cls.execute_query('CALL GetStages()')
-            for status in statusList:
-                cls.__statusList.append(status[0])
-            for stage in stagesList:
-                cls.__stagesList.append(stage[0])
-            print(cls.__statusList)
-            print(cls.__stagesList)
+            # statusList = cls.execute_query('CALL GetStatuses()')
+            # stagesList = cls.execute_query('CALL GetStages()')
+            # for status in statusList:
+            #     cls.__statusList.append(status[0])
+            # for stage in stagesList:
+            #     cls.__stagesList.append(stage[0])
             return cls.__instance
 
     # Connecting database
