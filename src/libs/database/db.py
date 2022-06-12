@@ -1,53 +1,52 @@
 from datetime import datetime
-import time
+#import time
 import pymysql
 import logging
-import os.path
-import sys
+#import os.path
+#import sys
 import re
-
-from tabnanny import check
-from time import timezone
-from typing import List
 
 logger = logging.getLogger(__name__)
 
 # Connecting sql query for creating a new database and
 # connecting path to the directory with the config file
-if __name__ == '__main__':
-    from create_db_sql import create_status_table
-    from create_db_sql import create_users_table
-    from create_db_sql import insert_status
-    sys.path.append('D:/!GitClones/DiscordBot/src/')
-else:
-    from .create_db_sql import create_status_table
-    from .create_db_sql import create_users_table
-    from .create_db_sql import insert_status
-    sys.path.append(os.getcwdb()) 
-    
-from config import Config
+# if __name__ == '__main__':
+#     from create_db_sql import create_status_table
+#     from create_db_sql import create_users_table
+#     from create_db_sql import insert_status
+#     sys.path.append('D:/!GitClones/DiscordBot/src/')
+# else:
+#     from .create_db_sql import create_status_table
+#     from .create_db_sql import create_users_table
+#     from .create_db_sql import insert_status
+#     sys.path.append(os.getcwdb()) 
 
 # Singleton
 class Database:
     __instance = None
     __connection = None
     __statusList = []
+    __stagesList = []
 
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(Database, cls).__new__(cls)
             cls.__connection = cls.create_connection()
-            tableList = cls.execute_query(''' SHOW TABLES; ''')
-            if (len(tableList) == 0):
-                print('There are no tables, create new')
-                logger.warning('MYSQL Create new tables')
-                cls.execute_query(create_status_table)
-                cls.execute_query(create_users_table)
-                cls.execute_query(insert_status)
-            tempStatusList = cls.execute_query(''' SELECT Name FROM status ''')
-            for status in tempStatusList:
-                 cls.__statusList.append(status[0])
-            print('New Database Object created!')
+            # tableList = cls.execute_query(''' SHOW TABLES; ''')
+            # if (len(tableList) == 0):
+            #     print('There are no tables, create new')
+            #     logger.warning('MYSQL Create new tables')
+            #     # cls.execute_query(create_status_table)
+            #     # cls.execute_query(create_users_table)
+            #     # cls.execute_query(insert_status)
+            statusList = cls.execute_query('CALL GetStatuses()')
+            stagesList = cls.execute_query('CALL GetStages()')
+            for status in statusList:
+                cls.__statusList.append(status[0])
+            for stage in stagesList:
+                cls.__stagesList.append(stage[0])
+            print(cls.__statusList)
+            print(cls.__stagesList)
             return cls.__instance
 
     # Connecting database
@@ -76,113 +75,71 @@ class Database:
     # Check user
     @classmethod
     def check_user(cls, userId: int):
-        result = cls.execute_query(f'''SELECT CASE WHEN EXISTS(SELECT Name FROM users where DiscordID = {userId}) = 1 THEN 1 ELSE 0 END''')
-        return 1 if (result[0][0] == 1) else 0
+        return cls.execute_query(f'SELECT CheckUser({userId})')[0][0]
 
     # Add a new user
     @classmethod
-    def add_user(cls, id: int, inviterId: int = None, inviteCode: str = None):
-        ts = time.time()
-        now = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        if (cls.execute_query(f''' INSERT INTO users (DiscordID, JoinedDatetime, InviterId, InviteCode) VALUES ({id}, '{now}', {inviterId}, '{inviteCode}') ''')):
-            return 1
-        return 0
+    def add_user(cls, userId: int, inviterId: int):
+        cls.execute_query(f'CALL AddNewUser({userId}, {inviterId})')
 
-    # Update registration date
+    # Get user
     @classmethod
-    def get_user(cls, id: int):
-        result = cls.execute_query(f''' SELECT * FROM users WHERE DiscordID = {id} ''')
-        return result
+    def get_user(cls, userId: int):
+        return cls.execute_query(f'CALL GetUserByID({userId})')[0]
 
-    # Set user registration status
+    # Set user verification status
     @classmethod
-    def set_status(cls, id: int, status):
-        if status in cls.__statusList:
-            cls.execute_query(f''' UPDATE users SET status="{status}" WHERE DiscordID={id} ''')
-            return 1
-        else:
-            logger.error(f'The error in set_status occured, Invalid status: {status}')
-        return 0
-
-    # Set user name
-    @classmethod
-    def set_name(cls, id, name):
-        match = re.fullmatch(Config.get('db', 'name_pattern'), name)
-        if (match):
-            if cls.check_user(id): 
-                cls.execute_query(f''' UPDATE users SET Name="{name}" WHERE DiscordID={id} ''')
-                return 1
-            else:
-                logger.error(f'The error in set_name occured, No player with such ID: {id}')
-        else:
-            logger.error(f'The error in set_name occured, Invalid name: {name}')
-        return 0
+    def set_status(cls, userId: int, status):
+        cls.execute_query(f'CALL SetVerificationStatus({userId}, "{status}")')
     
+    # Set user interview stage
+    @classmethod
+    def set_stage(cls, userId: int, stage):
+        cls.execute_query(f'CALL SetInterviewStage({userId}, "{stage}")')
+
+    # Check is nickname unique
+    @classmethod
+    def check_nickname(cls, nickname):
+        return not cls.execute_query(f'SELECT CheckNickname("{nickname}")')[0][0]
+
     # Set user nickname
     @classmethod
-    def set_nickname(cls, id, nickname):
+    def set_nickname(cls, userId: int, nickname):
         match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
         if (match):
-            if cls.check_user(id): 
-                cls.execute_query(f''' UPDATE users SET Nickname="{nickname}" WHERE DiscordID={id} ''')
+            if cls.check_nickname(nickname): 
+                cls.execute_query(f'CALL SetNickname({userId}, "{nickname}")')
                 return 1
-            else:
-                logger.error(f'The error in set_nickname occured, No player with such ID: {id}')
-        else:
-            logger.error(f'The error in set_nickname occured, Invalid nickname: {nickname}')
         return 0
 
-    # Get not confirmed invited players
+    # Get invited not confirmed players
     @classmethod
-    def get_invited(cls, id):
-        return cls.execute_query(f''' SELECT DiscordID FROM users WHERE InviterId = {id} AND Confirmed = 0 ''')
-    
-    # Get all not confirmed invited players
-    @classmethod
-    def get_all_invited(cls):
-        return cls.execute_query(f''' SELECT DiscordID FROM users WHERE Confirmed = 0 ''')
+    def get_invited_not_confirmed(cls):
+        return cls.execute_query(f'CALL GetUsersByVerificationStatus("JOINED")')
 
-    # Get current user status
+    # Get all invited players by user
     @classmethod
-    def get_status(cls, id):
-        if cls.check_user(id): 
-            return cls.execute_query(f'''  SELECT Name, Description FROM status WHERE EXISTS (SELECT Status FROM users WHERE status.Name = users.Status AND users.DiscordID = {id}) ''')
-        else:
-            logger.error(f'The error in set_nickname occured, No player with such ID: {id}')
-        return None
+    def get_invited_by_inviter(cls, userId: int):
+        return cls.execute_query(f'CALL GetInvitedByID({userId})')
+    
+    # Get Count of invited by user
+    @classmethod
+    def get_invited_count_by_inviter(cls, userId: int):
+        return cls.execute_query(f'SELECT GetInvitedCountByID({userId})')[0][0]
+    
+    # Get all players not confirmed invited by user
+    @classmethod
+    def get_invited_not_confirmed_by_inviter(cls, userId: int):
+        return cls.execute_query(f'CALL GetUsersByVerificationStatusAndInviterID("JOINED", {userId})')
+
+    # Get user status and stage
+    @classmethod
+    def get_status_and_stage(cls, userId: int):
+        return cls.execute_query(f'CALL GetVerification({userId})')[0]
 
     # Confirm player
     @classmethod
-    def confirm(cls, confirmatorId: int , userId: int):
-        if (cls.check_user(userId)):
-            user = cls.get_user(userId)
-            if not (user[0][8]):
-                cls.execute_query(f''' UPDATE users SET Confirmed=1 WHERE DiscordID={userId} ''')
-                cls.execute_query(f''' UPDATE users SET ConfirmatorID={confirmatorId} WHERE DiscordID={userId} ''')
-                return 1
-            else:
-                return 0
-        return 0
-
-    # Set joined date
-    @classmethod
-    def set_joined_date(cls, id, date):
-        if cls.check_user(id): 
-            cls.execute_query(f''' UPDATE users SET JoinedDatetime="{date}" WHERE DiscordID={id} ''')
-        else:
-            logger.error(f'The error in set_joined_date occured, No player with such ID: {id}')
-        return 0
-    
-    # Update registration date
-    @classmethod
-    def update_reg_date(cls, id):
-        if cls.check_user(id): 
-            ts = time.time()
-            now = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-            cls.execute_query(f''' UPDATE users SET RegDatetime="{now}" WHERE DiscordID={id} ''')
-            return 1
-        else:
-            logger.error(f'The error in update_reg_date occured, No player with such ID: {id}')
-        return 0
+    def set_confirmator(cls,userId: int,  confirmatorId: int):
+        cls.execute_query(f'CALL SetConfirmatorID({userId}, {confirmatorId})')
 
 db = Database()

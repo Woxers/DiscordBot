@@ -9,7 +9,7 @@
         "success": "0x538A1B"
     },
     "db": {
-        "nickname_pattern": "^[a-zA-Z0-9_]{2,24}$",
+        "nickname_pattern": "^[a-zA-Z0-9_]{2,16}$",
         "name_pattern": "^[а-яА-ЯёЁ ]{1,32}$"
     },
     "log": {
