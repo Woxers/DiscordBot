@@ -9,7 +9,6 @@ import datetime
 from discord.ext import commands
 from help import CustomHelpCommand
 from config import Config
-from sys import platform
 
 import log
 

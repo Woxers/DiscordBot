@@ -137,9 +137,19 @@ class Database:
     def get_status_and_stage(cls, userId: int):
         return cls.execute_query(f'CALL GetVerification({userId})')[0]
 
-    # Confirm player
+    # Set confirmator
     @classmethod
-    def set_confirmator(cls,userId: int,  confirmatorId: int):
+    def set_confirmator(cls, userId: int,  confirmatorId: int):
         cls.execute_query(f'CALL SetConfirmatorID({userId}, {confirmatorId})')
+
+    # Delete User
+    @classmethod
+    def delete_user(cls, userId: int):
+        cls.execute_query(f'CALL DeleteUser({userId})')
+
+    # Upd join date (row sql)
+    @classmethod
+    def upd_joined_date(cls, userId: int, date: datetime.timestamp):
+        cls.execute_query(f' UPDATE users SET JoinedTimestamp="{date}" WHERE DiscordID={userId} ')
 
 db = Database()

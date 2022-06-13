@@ -7,7 +7,6 @@ from config import Config
 from libs import Database
 from discord.ext import commands
 
-
 logger = logging.getLogger(__name__)
 
 class WelcomeCog(commands.Cog):
@@ -52,23 +51,57 @@ class WelcomeCog(commands.Cog):
                 await self.bot.upd_invites()
                 break
 
-        # Addind user to database
-        if not (Database.check_user(member.id)):
-            newbie = '***NEWBIE***\n'
+        joinedStatus = ''
+        # Is user in database?
+        if not Database.check_user(member.id):
+            isNewbie = True
             if not member.bot:
+                joinedStatus = 'NEWBIE'
                 print('Adding new player to database')
-                Database.add_user(member.id, inviter.id, str(inviteCode))
-                await self.send_invite_message(member, inviter, invite)
+                Database.add_user(member.id, inviter.id)
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'candidate'))
+                await member.add_roles(role, reason='Newbie Auto-role')
+                await self.bot.get_cog('VerificationCog').send_inviter_message(member, inviter, invite)
+                await self.bot.get_cog('VerificationCog').send_newbie_message_on_join(member)
                 await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
         else:
-            newbie = '**OLD PLAYER**\n'
-            print('Player is not newbie')
-
-        # Adding auto-role
-        if (Config.get('role', 'enabled')):
-            roleId = Config.get('role', 'id')
-            role = discord.utils.get(member.guild.roles, id=roleId)
-            await member.add_roles(role, reason='Auto-role')
+            verification = Database.get_status_and_stage(member.id)
+            if (verification[0] == 'JOINED'):
+                print('Зашедший пользователь ранее не прошел верификацию до конца')
+                joinedStatus = 'NOT VERIFIED IN PAST'
+                Database.delete_user(member.id)
+                print('Adding new player to database')
+                Database.add_user(member.id, inviter.id)
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'candidate'))
+                await member.add_roles(role, reason='Newbie Auto-role')
+                await self.bot.get_cog('VerificationCog').send_inviter_message(member, inviter, invite)
+                await self.bot.get_cog('VerificationCog').send_newbie_message_on_join(member)
+                await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
+            elif(verification[0] == 'REJECTED'):
+                joinedStatus = 'REJECTED'
+                print('Зашедший пользователь ранее был отклонен по время верификации')
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'rejected'))
+                await member.add_roles(role, reason='Rejected Auto-role')
+                await self.bot.get_cog('VerificationCog').send_rejected_message_on_join(member)
+            elif(verification[0] == 'SPECTATOR'):
+                joinedStatus = 'SPECTATOR'
+                print('Зашедший пользователь ранее был спектатором')
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'spectator'))
+                await member.add_roles(role, reason='Spectator Auto-role')
+                await self.bot.get_cog('VerificationCog').send_spectator_message_on_join(member)
+            elif(verification[0] == 'ACCESS'):
+                joinedStatus = 'HAD ACCESS'
+                print('Зашедший пользователь ранее имел доступ к minecraft серверу')
+                Database.set_status(member.id, 'CONFIRMED')
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'verified'))
+                await member.add_roles(role, reason='Verified Auto-role')
+                await self.bot.get_cog('VerificationCog').send_access_message_on_join(member)
+            elif(verification[0] == 'CONFIRMED'):
+                joinedStatus = 'VERIFIED'
+                print('Зашедший пользователь ранее верифицирован')
+                role = discord.utils.get(member.guild.roles, id=Config.get('role', 'verified'))
+                await member.add_roles(role, reason='Verified Auto-role')
+                await self.bot.get_cog('VerificationCog').send_verified_message_on_join(member)
 
         # Message to log channel
         if not (Config.get('greetings', 'enabled')):
@@ -79,9 +112,9 @@ class WelcomeCog(commands.Cog):
         else:
             created = member.created_at
             created = created.strftime('%Y-%m-%d')
-            description = f'{newbie}Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: {inviter.mention}\nInvite Code: {inviteCode}'
+            description = f'**{joinedStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: {inviter.mention}\nInvite Code: {inviteCode}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='success', description=description, author_icon=member.avatar_url, author_name='User joined!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='neutral', description=description, author_icon=member.avatar_url, author_name='User joined!', footer_text=footer_text, timestamp=True)
 
     #####################################
     ##           MEMBER LEFT           ##
@@ -89,6 +122,18 @@ class WelcomeCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         print(f'Player left: {member.mention}')
+        leftStatus = ''
+        verification = Database.get_status_and_stage(member.id)
+        if (verification[0] == 'JOINED'):
+            leftStatus = 'NOT VERIFIED'
+        elif(verification[0] == 'REJECTED'):
+            leftStatus = 'REJECTED'
+        elif(verification[0] == 'SPECTATOR'):
+            leftStatus = 'SPECTATOR'
+        elif(verification[0] == 'ACCESS'):
+            leftStatus = 'HAD ACCESS'
+        elif(verification[0] == 'CONFIRMED'):
+            leftStatus = 'VERIFIED'
 
         # Message to log channel
         if not (Config.get('greetings', 'enabled')):
@@ -100,26 +145,19 @@ class WelcomeCog(commands.Cog):
         else:
             created = member.created_at
             created = created.strftime('%Y-%m-%d')
-            description = f'Mention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
+            description = f'**{leftStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='success', description=description, author_icon=member.avatar_url, author_name='User left!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='error', description=description, author_icon=member.avatar_url, author_name='User left!', footer_text=footer_text, timestamp=True)
 
+    #############*********#############
+    ##           FUNCTIONS           ##
+    #############*********#############
+
+    # Function for finding inviter
     def find_invite_by_code(self, invite_list, code):
         for inv in invite_list:
             if inv.code == code:
                 return inv
-
-    async def send_invite_message(self, member: discord.user, inviter: discord.user, invite: discord.invite):
-        embed = discord.Embed(color = Config.getColor('neutral'))
-        stroke = ''
-        stroke += f'По вашему приглашению `{invite.code}` присоединился новый пользователь. Готовы ли вы за него поручиться? В таком случае игрок пройдет регистрацию в упрощенном формате.'
-        stroke += f'\n\n*Пользователь* ID: `{member.id}` - {member.mention}'
-        stroke += f'\n\nЧтобы поручиться за пользователя введите: `!confirm ID`'
-        embed.description = stroke
-        embed.set_footer(text=f'Total Invited: {invite.uses} \u200b')
-        embed.title = 'Приглашен игрок!'
-        embed.timestamp = datetime.datetime.utcnow()
-        await inviter.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(WelcomeCog(bot))

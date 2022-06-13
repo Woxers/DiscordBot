@@ -37,9 +37,10 @@ class OwnerCog(commands.Cog):
                 if not (Database.check_user(member.id)):
                     print('Заносим нового пользователя в базу')
                     stroke += f'{member}\n'
-                    Database.add_user(member.id, 222746438814138368, 'YhVsknp')
+                    Database.add_user(member.id, 222746438814138368)
+                    Database.set_stage(member.id, 'CHECKED')
                     Database.set_status(member.id, 'CONFIRMED')
-                    Database.confirm(222746438814138368, member.id)
+                    Database.set_confirmator(member.id, 222746438814138368)
                     logger.info(f'Added new player to database: {member.id}')
         await ctx.send(stroke)
     
@@ -51,7 +52,7 @@ class OwnerCog(commands.Cog):
         for member in guild.members:
             if not (member.bot):
                 print('Update joined datetime')
-                Database.set_joined_date(member.id, member.joined_at)
+                Database.upd_joined_date(member.id, member.joined_at)
         await ctx.send('DONE')
 
 def setup(bot):

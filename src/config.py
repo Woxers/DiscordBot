@@ -14,7 +14,6 @@ class Config():
             with open(path, 'r', encoding='utf-8') as settings:
                 cls.__json_string=json.load(settings)
             settings.close()
-            print("New Config Object created!")
 
         return cls.__instance
 
