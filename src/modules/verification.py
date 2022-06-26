@@ -152,5 +152,5 @@ class VerificationCog(commands.Cog):
         playersChannel = self.bot.get_channel(Config.get('profile', 'channel'))
         await self.bot.send_embed(playersChannel, description=stroke, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True)
 
-def setup(bot):
-    bot.add_cog(VerificationCog(bot))
+async def setup(bot):
+    await bot.add_cog(VerificationCog(bot))

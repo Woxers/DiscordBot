@@ -20,7 +20,9 @@ class CustomBot(commands.Bot):
         intents = discord.Intents.all()
         super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand, intents=intents)
         intents.members = True
-        self.setup_cogs()
+
+    async def setup_hook(self):
+        await self.setup_cogs()
 
     async def on_ready(self): 
         await self.upd_invites()
@@ -32,11 +34,11 @@ class CustomBot(commands.Bot):
             await self.send_embed(ctx, 'Command not found', None, 3, 'error')
 
     # Connectins extensions
-    def setup_cogs(self):
+    async def setup_cogs(self):
         print('Starting load extensions...')
         for filename in listdir('/home/aptem/VScodeRep/DiscordBot/src/modules'):
             if filename.endswith('.py') and not filename.startswith('__'):
-                self.load_extension(f'modules.{filename[:-3]}')
+                await self.load_extension(f'modules.{filename[:-3]}')
                 print(f'Load: {filename[:-3]}')
         print('Done')
 

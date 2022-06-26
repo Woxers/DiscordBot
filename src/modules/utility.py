@@ -188,5 +188,5 @@ class UtilityCog(commands.Cog):
             inv += f'({invite.uses}) {str(invite)[19:]} - Владелец {invite.inviter.mention}\n'
         await self.bot.send_embed(ctx.channel, title='Invites', description=inv, color='neutral')
 
-def setup(bot):
-    bot.add_cog(UtilityCog(bot))
+async def setup(bot):
+    await bot.add_cog(UtilityCog(bot))

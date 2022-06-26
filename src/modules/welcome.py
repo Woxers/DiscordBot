@@ -159,5 +159,5 @@ class WelcomeCog(commands.Cog):
             if inv.code == code:
                 return inv
 
-def setup(bot):
-    bot.add_cog(WelcomeCog(bot))
+async def setup(bot):
+    await bot.add_cog(WelcomeCog(bot))

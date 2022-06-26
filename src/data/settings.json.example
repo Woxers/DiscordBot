@@ -39,5 +39,9 @@
     "verification": {
         "channel": 980101976404664440,
         "enabled": 1
+    },
+    "server": {
+        "host": "",
+        "port": ""
     }
 }

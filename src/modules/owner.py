@@ -1,5 +1,7 @@
 import logging
 
+import discord
+
 from config import Config
 from discord.ext import commands
 
@@ -19,8 +21,8 @@ class OwnerCog(commands.Cog):
             if not (extension == 'modules.owner'): extensions.append(extension)
         for extension in extensions:
             if not (extension == 'modules.owner'):
-                self.bot.unload_extension(extension)
-                self.bot.load_extension(extension)
+                await self.bot.unload_extension(extension)
+                await self.bot.load_extension(extension)
         print('reloaded')
         logger.warning('All extensions are reloaded!')
         await self.bot.send_embed(ctx.channel, title='Command executed', description='All extensions are reloaded!', color='success')
@@ -55,5 +57,17 @@ class OwnerCog(commands.Cog):
                 Database.upd_joined_date(member.id, member.joined_at)
         await ctx.send('DONE')
 
-def setup(bot):
-    bot.add_cog(OwnerCog(bot))
+    class View(discord.ui.View): # Create a class called View that subclasses discord.ui.View
+        @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
+        async def button_callback(self, interaction, button):
+            await interaction.response.send_message("You clicked the button!")
+
+    @commands.command(name='test-com')
+    @commands.is_owner()
+    async def test_com(self, ctx):
+        print('works')
+        await ctx.send("This is a button!", view=self.View()) # Send a message with our View class that contains the button
+
+
+async def setup(bot):
+    await bot.add_cog(OwnerCog(bot))
