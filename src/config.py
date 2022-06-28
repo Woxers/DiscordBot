@@ -9,7 +9,8 @@ class Config():
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(Config, cls).__new__(cls)
-            path = '/home/aptem/VScodeRep/DiscordBot/src/data/settings.json'
+            #path = '/home/aptem/VScodeRep/DiscordBot/src/data/settings.json'
+            path = os.getcwdb().decode("utf-8") + '\data\settings.json'
             with open(path, 'r', encoding='utf-8') as settings:
                 cls.__json_string=json.load(settings)
             settings.close()
