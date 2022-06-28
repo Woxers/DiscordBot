@@ -1,6 +1,5 @@
 import json
 import os.path
-from sys import platform
 
 # Singleton 
 class Config():
