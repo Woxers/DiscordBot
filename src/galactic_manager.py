@@ -3,7 +3,6 @@ from tokenize import String
 import discord
 import asyncio
 from os import listdir
-import logging
 import datetime
 
 from discord.ext import commands
