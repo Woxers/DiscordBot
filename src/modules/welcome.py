@@ -61,9 +61,8 @@ class WelcomeCog(commands.Cog):
                 Database.add_user(member.id, inviter.id)
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'candidate'))
                 await member.add_roles(role, reason='Newbie Auto-role')
-                await self.bot.get_cog('VerificationCog').send_inviter_message(member, inviter, invite)
-                await self.bot.get_cog('VerificationCog').send_newbie_message_on_join(member)
-                await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
+                await self.bot.get_cog('MessagesCog').send_inviter_message(member, inviter, invite)
+                await self.bot.get_cog('MessagesCog').send_newbie_message_on_join(member)
         else:
             verification = Database.get_status_and_stage(member.id)
             if (verification[0] == 'JOINED'):
@@ -74,34 +73,33 @@ class WelcomeCog(commands.Cog):
                 Database.add_user(member.id, inviter.id)
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'candidate'))
                 await member.add_roles(role, reason='Newbie Auto-role')
-                await self.bot.get_cog('VerificationCog').send_inviter_message(member, inviter, invite)
-                await self.bot.get_cog('VerificationCog').send_newbie_message_on_join(member)
-                await self.bot.get_cog('VerificationCog').new_unconfirmed_player(member)
+                await self.bot.get_cog('MessagesCog').send_inviter_message(member, inviter, invite)
+                await self.bot.get_cog('MessagesCog').send_newbie_message_on_join(member)
             elif(verification[0] == 'REJECTED'):
                 joinedStatus = 'REJECTED'
                 print('Зашедший пользователь ранее был отклонен по время верификации')
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'rejected'))
                 await member.add_roles(role, reason='Rejected Auto-role')
-                await self.bot.get_cog('VerificationCog').send_rejected_message_on_join(member)
+                await self.bot.get_cog('MessagesCog').send_rejected_message_on_join(member)
             elif(verification[0] == 'SPECTATOR'):
                 joinedStatus = 'SPECTATOR'
                 print('Зашедший пользователь ранее был спектатором')
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'spectator'))
                 await member.add_roles(role, reason='Spectator Auto-role')
-                await self.bot.get_cog('VerificationCog').send_spectator_message_on_join(member)
+                await self.bot.get_cog('MessagesCog').send_spectator_message_on_join(member)
             elif(verification[0] == 'ACCESS'):
                 joinedStatus = 'HAD ACCESS'
                 print('Зашедший пользователь ранее имел доступ к minecraft серверу')
                 Database.set_status(member.id, 'CONFIRMED')
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'verified'))
                 await member.add_roles(role, reason='Verified Auto-role')
-                await self.bot.get_cog('VerificationCog').send_access_message_on_join(member)
+                await self.bot.get_cog('MessagesCog').send_access_message_on_join(member)
             elif(verification[0] == 'CONFIRMED'):
                 joinedStatus = 'VERIFIED'
                 print('Зашедший пользователь ранее верифицирован')
                 role = discord.utils.get(member.guild.roles, id=Config.get('role', 'verified'))
                 await member.add_roles(role, reason='Verified Auto-role')
-                await self.bot.get_cog('VerificationCog').send_verified_message_on_join(member)
+                await self.bot.get_cog('MessagesCog').send_verified_message_on_join(member)
 
         # Message to log channel
         if not (Config.get('greetings', 'enabled')):
@@ -114,7 +112,7 @@ class WelcomeCog(commands.Cog):
             created = created.strftime('%Y-%m-%d')
             description = f'**{joinedStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: {inviter.mention}\nInvite Code: {inviteCode}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='neutral', description=description, author_icon=member.avatar_url, author_name='User joined!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='neutral', description=description, author_icon=member.avatar.url, author_name='User joined!', footer_text=footer_text, timestamp=True)
 
     #####################################
     ##           MEMBER LEFT           ##
@@ -147,7 +145,7 @@ class WelcomeCog(commands.Cog):
             created = created.strftime('%Y-%m-%d')
             description = f'**{leftStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='error', description=description, author_icon=member.avatar_url, author_name='User left!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='error', description=description, author_icon=member.avatar.url, author_name='User left!', footer_text=footer_text, timestamp=True)
 
     #############*********#############
     ##           FUNCTIONS           ##

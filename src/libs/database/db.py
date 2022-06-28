@@ -135,7 +135,11 @@ class Database:
     # Get user status and stage
     @classmethod
     def get_status_and_stage(cls, userId: int):
-        return cls.execute_query(f'CALL GetVerification({userId})')[0]
+        dictionary = dict()
+        res = cls.execute_query(f'CALL GetVerification({userId})')[0]
+        dictionary['status'] = res[0]
+        dictionary['stage'] = res[1]
+        return dictionary
 
     # Set confirmator
     @classmethod

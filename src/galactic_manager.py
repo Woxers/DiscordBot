@@ -1,17 +1,20 @@
-import json
 import os
-import threading
 import time
-from tokenize import String
-import discord
-import asyncio
-from os import listdir
+import json
 import datetime
 
-from discord.ext import commands
+import discord
+
+import asyncio
+import threading
+
 import requests
 import urllib3
+
+from os import listdir
+
 from help import CustomHelpCommand
+from discord.ext import commands
 from config import Config
 
 import log
@@ -126,8 +129,11 @@ class CustomBot(commands.Bot):
                 print(f'Load: {filename[:-3]}')
         print('Done')
 
+    async def send_embed_from_json(self, path):
+        pass
+
     # Sending embeded message
-    async def send_embed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None):
+    async def send_embed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None, view = None):
         print(f'Sending embeded message in channel {channel}')
         embed = discord.Embed()
         if (title != None):
@@ -149,12 +155,8 @@ class CustomBot(commands.Bot):
         if (timestamp == True):
             embed.timestamp = datetime.datetime.utcnow()
         
-        msg = await channel.send(embed = embed)
+        return await channel.send(embed = embed, view = view, delete_after = duration)
 
-        if (duration != None):
-            await asyncio.sleep(duration)
-            await msg.delete()
-    
     # Get all existing invites
     def get_invites(self):
         return self.__invites
@@ -165,19 +167,19 @@ class CustomBot(commands.Bot):
 
     @client.listener
     async def on_player_join(name):
-        print(name + ' joined the server')
+        await bot.get_cog('McCog').player_joined(name)
 
     @client.listener
     async def on_player_left(name):
-        print(name + ' left the server')
+        await bot.get_cog('McCog').player_left(name)
 
     @client.listener
     async def on_player_login(name):
-        print(name + ' logged in')
+        await bot.get_cog('McCog').player_login(name)
 
     @client.listener
     async def on_player_failed_login(name):
-        print(name + ' failed login')
+        await bot.get_cog('McCog').player_failed_login(name)
 
 bot = CustomBot()
 
