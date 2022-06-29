@@ -1,4 +1,8 @@
 import logging
+import re
+
+import secrets
+import string
 
 from config import Config
 from discord.ext import commands
@@ -22,6 +26,50 @@ class McCog(commands.Cog):
 
     async def player_failed_login(self, nickname):
         print(nickname + ' failed login')
+
+    @commands.command(name='setnickname')
+    @commands.dm_only()
+    async def setnickname(self, ctx, nickname: str):
+        if not Database.check_user(ctx.author.id):
+            await self.bot.get_cog('MessagesCog').unexpected_error_message(ctx.author)
+            return
+        
+        user = Database.get_user(ctx.author.id)
+
+        if not user['Status'] == 'ACCESS':
+            await self.bot.get_cog('MessagesCog').noaccess_error_message(ctx.author)
+            return
+        
+        if not (user['Nickname'] == None or user['Nickname'] == ''):
+            await self.bot.get_cog('MessagesCog').already_set_nickname_error_message(ctx.author)
+            return
+
+        if not 3 <= len(nickname) <= 16:
+            await self.bot.get_cog('MessagesCog').nickname_not_valid_error_message(ctx.author)
+            return
+
+        match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
+        if not match:
+            await self.bot.get_cog('MessagesCog').nickname_not_valid_error_message(ctx.author)
+            return
+
+        if not Database.check_nickname(nickname):
+            await self.bot.get_cog('MessagesCog').nickname_not_unique_error_message(ctx.author)
+            return
+
+        if Database.set_nickname(ctx.author.id, nickname):
+            alphabet = string.ascii_letters + string.digits
+            password = ''.join(secrets.choice(alphabet) for i in range(10))
+            print(password + '   ' + nickname)
+            if await self.bot.register_player(nickname, password):
+                await self.bot.get_cog('MessagesCog').successfully_registered_message(ctx.author, nickname, password)
+                await self.bot.get_cog('MessagesCog').new_player_message(ctx.author)
+            else:
+                await self.bot.get_cog('MessagesCog').unexpected_error_message(ctx.author)
+                Database.set_nickname(ctx.author.id, '')
+        else: 
+            await self.bot.get_cog('MessagesCog').nickname_not_valid_error_message(ctx.author)
+
 
 async def setup(bot):
     await bot.add_cog(McCog(bot))

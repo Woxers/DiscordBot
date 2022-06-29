@@ -74,6 +74,23 @@ class McApiClient:
                 time.sleep(2)
                 pass
     
+    # Register player
+    @classmethod
+    def register_player(cls, nickname, password):
+        try:
+            print(nickname)
+            print(password)
+            r = requests.get(f'{cls.url}register', verify=False, data={"token":cls.token, "nickname":nickname, "password": password})
+            print(r)
+            if r.status_code == 501 or r.status_code == 401:
+                raise Exception(r.content);
+        except Exception as e:
+            log.info(e)
+            print(e)
+            pass
+            return 0
+        return 1
+    
     # Handle received events
     @classmethod
     async def handle_events(cls, handlers, value):
@@ -180,6 +197,9 @@ class CustomBot(commands.Bot):
     @client.listener
     async def on_player_failed_login(name):
         await bot.get_cog('McCog').player_failed_login(name)
+
+    async def register_player(self, nickname, password):
+        return self.client.register_player(nickname, password)
 
 bot = CustomBot()
 

@@ -85,7 +85,18 @@ class Database:
     # Get user
     @classmethod
     def get_user(cls, userId: int):
-        return cls.execute_query(f'CALL GetUserByID({userId})')[0]
+        dictionary = dict()
+        result = cls.execute_query(f'CALL GetUserByID({userId})')[0]
+        
+        dictionary['DiscordID'] = result[0]
+        dictionary['JoinedTimestamp'] = result[1]
+        dictionary['Status'] = result[2]
+        dictionary['Stage'] = result[3]
+        dictionary['InviterID'] = result[4]
+        dictionary['ConfirmatorID'] = result[5]
+        dictionary['Nickname'] = result[6]
+
+        return dictionary
 
     # Set user verification status
     @classmethod
@@ -100,17 +111,16 @@ class Database:
     # Check is nickname unique
     @classmethod
     def check_nickname(cls, nickname):
-        return not cls.execute_query(f'SELECT CheckNickname("{nickname}")')[0][0]
+        match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
+        if (match):
+            return not cls.execute_query(f'SELECT CheckNickname("{nickname}")')[0][0]
+        return 0 
 
     # Set user nickname
     @classmethod
     def set_nickname(cls, userId: int, nickname):
-        match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
-        if (match):
-            if cls.check_nickname(nickname): 
-                cls.execute_query(f'CALL SetNickname({userId}, "{nickname}")')
-                return 1
-        return 0
+        cls.execute_query(f'CALL SetNickname({userId}, "{nickname}")')
+        return 1
 
     # Get invited not confirmed players
     @classmethod

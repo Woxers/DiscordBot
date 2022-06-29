@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from turtle import title
 import discord
 
 from config import Config
@@ -61,8 +62,6 @@ class MessagesCog(commands.Cog):
             await interaction.response.edit_message(view = None, embed = embed)
             await self.bot.get_cog('MessagesCog').new_unconfirmed_player(self.member, self.confirmator)
 
-        
-
         # CHANNEL: DM Newbie
     # Message to newbie on first join
     async def send_newbie_message_on_join(self, member: discord.Member):
@@ -98,13 +97,43 @@ class MessagesCog(commands.Cog):
     # New minecraft player message
     async def new_player_message(self, member: discord.Member):
         user = Database.get_user(member.id)
-        stroke = f':small_orange_diamond: Никнейм: {user[0][4]}\n'
-        stroke += f':small_orange_diamond: Реальное имя: {user[0][3]}\n'
-        regDate = user[0][5].split(' ')
-        stroke += f':small_orange_diamond: Дата регистрации: {regDate[0]}\n'
+        nickname = user['Nickname']
+        stroke = f':small_orange_diamond: Никнейм: {nickname}\n'
         stroke += f':small_blue_diamond: Дискорд: {member.mention}'
         playersChannel = self.bot.get_channel(Config.get('profile', 'channel'))
         await self.bot.send_embed(playersChannel, description=stroke, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True)
+
+        # CHANNEL: DM
+    # Yo have access to minecraft server
+    async def have_access_message(self, member: discord.Member):
+        description = f'Вы получили доступ к серверу minecraft. Чтобы начать играть, установите ник с помощью команды ниже. \n \n **!setnickname ник** \n \n*Длина никнейма от 3 до 16 символов*'
+        await self.bot.send_embed(member, title='Получен доступ!' , description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='success', timestamp=True )
+    
+        # CHANNEL: DM
+    # You are succesfully registered!
+    async def successfully_registered_message(self, member: discord.Member, nickname, password):
+        description = f'Вы были успешно зарегистрированы! Данные для входа в аккаунт:\n \nНикнейм: `{nickname}`\nПароль: `{password}`'
+        await self.bot.send_embed(member, description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='success', timestamp=True )
+    
+    async def unexpected_error_message(self, channel):
+        description = 'Произошла непредвиденная ошибка, пожалуйста свяжитесь с администратором <@222746438814138368>'
+        await self.bot.send_embed(channel, description=description, color='error')
+
+    async def noaccess_error_message(self, channel):
+        description = 'У вас нет доступа к этой команде'
+        await self.bot.send_embed(channel, description=description, color='error')
+    
+    async def already_set_nickname_error_message(self, channel):
+        description = 'Вы уже устанавливали никнейм ранее'
+        await self.bot.send_embed(channel, description=description, color='error')
+
+    async def nickname_not_unique_error_message(self, channel):
+        description = 'Никнейм уже занят'
+        await self.bot.send_embed(channel, description=description, color='error')
+
+    async def nickname_not_valid_error_message(self, channel):
+        description = 'Некорректный никнейм'
+        await self.bot.send_embed(channel, description=description, color='error')
 
 async def setup(bot):
     await bot.add_cog(MessagesCog(bot))

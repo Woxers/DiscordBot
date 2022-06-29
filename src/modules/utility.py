@@ -20,14 +20,7 @@ class UtilityCog(commands.Cog):
     @commands.guild_only()
     async def test1(self, ctx, arg = None):
         #await self.bot.get_cog('MessagesCog').new_player_message(ctx.author)
-        data = {"content": 'test', "embeds": [
-    {
-      "title": "Вы зашли на сервер.",
-      "description": "Для того, чтобы выполнить быстрый вход нажмите на кнопку ниже:",
-      "color": 16777215
-    }]}
-        await ctx.send('works')
-        await ctx.send(content = data)
+       await self.bot.get_cog('MessagesCog').have_access_message(ctx.author)
 
     ###################################
     ##      Command Target-guild     ##
