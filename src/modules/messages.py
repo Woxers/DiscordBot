@@ -52,6 +52,8 @@ class MessagesCog(commands.Cog):
         async def confirm_callback(self, interaction, button):
             embed = discord.Embed(color = Config.getColor('success'))
             embed.description = f'Вы поручились за пользователя {self.member.mention}!'
+            Database.set_confirmator(self.member.id, self.confirmator.id)
+            Database.set_stage(self.member.id, 'CHECKED')
             await interaction.response.edit_message(view = None, embed = embed)
             await self.bot.get_cog('MessagesCog').new_confirmed_player(self.member, self.confirmator)
         # Кнопка Я не знаю кто это
@@ -95,9 +97,7 @@ class MessagesCog(commands.Cog):
 
     # channel: players
     # New minecraft player message
-    async def new_player_message(self, member: discord.Member):
-        user = Database.get_user(member.id)
-        nickname = user['Nickname']
+    async def new_player_message(self, member: discord.Member, nickname):
         stroke = f':small_orange_diamond: Никнейм: {nickname}\n'
         stroke += f':small_blue_diamond: Дискорд: {member.mention}'
         playersChannel = self.bot.get_channel(Config.get('profile', 'channel'))
@@ -112,9 +112,15 @@ class MessagesCog(commands.Cog):
         # CHANNEL: DM
     # You are succesfully registered!
     async def successfully_registered_message(self, member: discord.Member, nickname, password):
-        description = f'Вы были успешно зарегистрированы! Данные для входа в аккаунт:\n \nНикнейм: `{nickname}`\nПароль: `{password}`'
+        description = f'Вы были успешно зарегистрированы! Данные для входа в аккаунт:\n \nНикнейм: `{nickname}`\nПароль: `{password}`\n\n*Настоятельно рекомендуем сменить пароль после первого входа на сервер!\n/changepassword <пароль> <новый пароль>*\n\nip: `gsprivate.aboba.host` | Версия игры `1.19`'
         await self.bot.send_embed(member, description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='success', timestamp=True )
     
+        # CHANNEL: DM
+    # Login in MC server!
+    async def login_mc_server_message(self, member: discord.Member):
+        description = f'Произведен вход на сервер с вашего аккаунта'
+        await self.bot.send_embed(member, description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True )
+
     async def unexpected_error_message(self, channel):
         description = 'Произошла непредвиденная ошибка, пожалуйста свяжитесь с администратором <@222746438814138368>'
         await self.bot.send_embed(channel, description=description, color='error')

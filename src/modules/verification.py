@@ -15,21 +15,17 @@ class VerificationCog(commands.Cog):
         logger.info('Connecting Verification module')
 
     ###################################
-    ##             Confirm           ##
-    ###################################
-    @commands.command(name='confirm', invoke_without_command='True')
-    async def confirm(self, ctx, id: int = None):
-        print('a')
-        print(Database.get_status_and_stage(id))
-
-    ###################################
     ##            GRANT MC           ##
     ###################################
     @commands.command(name='grant-mc', invoke_without_command='True')
+    @commands.has_permissions(administrator = True)
     async def grant_mc(self, ctx, id: int = None):
-        
-        print(Database.get_status_and_stage(id))
-    
+        if Database.check_user(id):
+            Database.set_status(id, 'ACCESS')
+            await self.bot.send_embed(ctx.channel, title='Command executed', description=f'<@{id}> has now acces to MC server', color='success')
+            await self.bot.get_cog('MessagesCog').have_access_message(self.bot.get_user(id))
+        else:
+            await self.bot.get_cog('MessagesCog').unexpected_error_message(ctx)
 
 async def setup(bot):
     await bot.add_cog(VerificationCog(bot))

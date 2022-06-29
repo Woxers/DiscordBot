@@ -112,6 +112,7 @@ class Database:
     @classmethod
     def check_nickname(cls, nickname):
         match = re.fullmatch(Config.get('db', 'nickname_pattern'), nickname)
+        nickname = nickname.lower()
         if (match):
             return not cls.execute_query(f'SELECT CheckNickname("{nickname}")')[0][0]
         return 0 
@@ -121,6 +122,11 @@ class Database:
     def set_nickname(cls, userId: int, nickname):
         cls.execute_query(f'CALL SetNickname({userId}, "{nickname}")')
         return 1
+
+    # Get user id by nickname
+    @classmethod
+    def get_user_id_by_nickname(cls, nickname):
+        return cls.execute_query(f'CALL GetUserIdByNickname("{nickname}")')
 
     # Get invited not confirmed players
     @classmethod

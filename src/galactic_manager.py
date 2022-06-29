@@ -11,6 +11,8 @@ import threading
 import requests
 import urllib3
 
+from discord.ext import tasks 
+
 from os import listdir
 
 from help import CustomHelpCommand
@@ -48,39 +50,41 @@ class McApiClient:
 
     # Receive events
     @classmethod
-    def receive_mc_events(cls):
-        print(f'\nMC receiving events started!')
-        while(True):
-            try:
-                r = requests.get(f'{cls.url}events', verify=False, data={"token":cls.token})
-                jsonn = json.loads(r.text)
-                if 'events' not in jsonn:
-                    raise Exception(f'Reply doesnt contains events: \n {jsonn}')
-                for event in jsonn['events']:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    if event['type'] == 'player_joined':
-                        loop.run_until_complete(cls.handle_events(cls.__joined_event_handlers, event['value']))
-                    elif event['type'] == 'player_quit':
-                        loop.run_until_complete(cls.handle_events(cls.__left_event_handlers, event['value']))
-                    elif event['type'] == 'player_login':
-                        loop.run_until_complete(cls.handle_events(cls.__login_event_handlers, event['value']))
-                    elif event['type'] == 'player_failed_login':
-                        loop.run_until_complete(cls.handle_events(cls.__failed_login_event_handlers, event['value']))
-                    loop.close
-                time.sleep(0.5)
-            except Exception as e:
-                print(e)
-                time.sleep(2)
-                pass
+    async def receive_mc_events(cls):
+        try:
+            r = requests.get(f'{cls.url}events', verify=False, data={"token":cls.token})
+            jsonn = json.loads(r.text)
+            if 'events' not in jsonn:
+                raise Exception(f'Reply doesnt contains events: \n {jsonn}')
+            for event in jsonn['events']:
+                if event['type'] == 'player_joined':
+                    await cls.handle_events(cls.__joined_event_handlers, event['value'])
+                elif event['type'] == 'player_quit':
+                    await cls.handle_events(cls.__left_event_handlers, event['value'])
+                elif event['type'] == 'player_login':
+                    await cls.handle_events(cls.__login_event_handlers, event['value'])
+                elif event['type'] == 'player_failed_login':
+                    await cls.handle_events(cls.__failed_login_event_handlers, event['value'])
+            time.sleep(0.5)
+        except Exception as e:
+            print(e)
+            time.sleep(2)
+            pass
     
     # Register player
     @classmethod
     def register_player(cls, nickname, password):
+        r = requests.get(f'{cls.url}register', verify=False, data={"token":cls.token, "nickname":nickname, "password": password})
+        if r.status_code == 501 or r.status_code == 401:
+            print(r.content)
+            return 0
+        return 1
+
+    # Unregister player
+    @classmethod
+    def unregister_player(cls, nickname):
         try:
-            print(nickname)
-            print(password)
-            r = requests.get(f'{cls.url}register', verify=False, data={"token":cls.token, "nickname":nickname, "password": password})
+            r = requests.get(f'{cls.url}unregister', verify=False, data={"token":cls.token, "nickname":nickname})
             print(r)
             if r.status_code == 501 or r.status_code == 401:
                 raise Exception(r.content);
@@ -116,6 +120,7 @@ class McApiClient:
 class CustomBot(commands.Bot):
     client = McApiClient()
     __invites = None
+    __last_deleted_inviter = None
 
     def __init__(self):
         helpCommand = CustomHelpCommand()
@@ -123,12 +128,16 @@ class CustomBot(commands.Bot):
         super().__init__(command_prefix=Config.get('bot', 'prefix'), help_command=helpCommand, intents=intents)
         intents.members = True
 
+    @tasks.loop(seconds = 1)
+    async def mc_receive_message_loop(self):
+        await self.client.receive_mc_events()
+
     async def setup_hook(self):
         await self.setup_cogs()
 
     async def on_ready(self): 
         await self.upd_invites()
-        self.client.start()
+        self.mc_receive_message_loop.start()
         print('Bot connected successfully!')
 
     # Error command not found
@@ -200,6 +209,9 @@ class CustomBot(commands.Bot):
 
     async def register_player(self, nickname, password):
         return self.client.register_player(nickname, password)
+
+    async def unregister_player(self, nickname, password):
+        return self.client.unregister_player(nickname)
 
 bot = CustomBot()
 

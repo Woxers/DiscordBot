@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 
@@ -15,6 +16,9 @@ class McCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def get_loop(self):
+        return asyncio.get_running_loop()
+
     async def player_joined(self, nickname):
         print(nickname + ' joined the server')
 
@@ -22,6 +26,13 @@ class McCog(commands.Cog):
         print(nickname + ' left the server')
 
     async def player_login(self, nickname):
+        id = Database.get_user_id_by_nickname(nickname)[0][0]
+        user = self.bot.get_guild(Config.get('guild', 'id')).get_member(id)
+        if not Database.check_nickname(nickname):
+            pass
+            await self.bot.get_cog('MessagesCog').login_mc_server_message(user)
+        else:
+            print('Пользователь не зарегистрирован через бота!')
         print(nickname + ' logged in')
 
     async def player_failed_login(self, nickname):
@@ -63,7 +74,7 @@ class McCog(commands.Cog):
             print(password + '   ' + nickname)
             if await self.bot.register_player(nickname, password):
                 await self.bot.get_cog('MessagesCog').successfully_registered_message(ctx.author, nickname, password)
-                await self.bot.get_cog('MessagesCog').new_player_message(ctx.author)
+                await self.bot.get_cog('MessagesCog').new_player_message(ctx.author, nickname)
             else:
                 await self.bot.get_cog('MessagesCog').unexpected_error_message(ctx.author)
                 Database.set_nickname(ctx.author.id, '')
