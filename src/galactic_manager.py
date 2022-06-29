@@ -151,7 +151,7 @@ class CustomBot(commands.Bot):
     async def setup_cogs(self):
         print('Starting load extensions...')
         if platform == "linux" or platform == "linux2":
-            path = '/home/testuser/DiscordBot/src/modules'
+            path = '/home/testuser/GalacticManager/src/modules'
         else:
             path = os.getcwdb().decode("utf-8") + '\modules'
 

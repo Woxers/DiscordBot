@@ -9,13 +9,13 @@ from config import Config
 from sys import platform
 
 # Инициализация логирования
-# path = '/home/aptem/VScodeRep/DiscordBot/src/logs/' + 'latest.log'
+# path = '/home/aptem/VScodeRep/GalacticManager/src/logs/' + 'latest.log'
 # path = os.getcwdb().decode("utf-8") + '\logs\latest.log'
 
 path = ''
 
 if platform == "linux" or platform == "linux2":
-    path = '/home/testuser/DiscordBot/src/logs/' + 'latest.log'
+    path = '/home/testuser/GalacticManager/src/logs/' + 'latest.log'
 else:
     path = os.getcwdb().decode("utf-8") + '\logs\latest.log'
 
