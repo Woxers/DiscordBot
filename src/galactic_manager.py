@@ -15,6 +15,8 @@ from discord.ext import tasks
 
 from os import listdir
 
+from sys import platform
+
 from help import CustomHelpCommand
 from discord.ext import commands
 from config import Config
@@ -148,8 +150,12 @@ class CustomBot(commands.Bot):
     # Connectins extensions
     async def setup_cogs(self):
         print('Starting load extensions...')
-        for filename in listdir(os.getcwdb().decode("utf-8") + '\modules'):
-        #for filename in listdir('/home/aptem/VScodeRep/DiscordBot/src/modules'):
+        if platform == "linux" or platform == "linux2":
+            path = '/home/testuser/DiscordBot/src/modules'
+        else:
+            path = os.getcwdb().decode("utf-8") + '\modules'
+
+        for filename in listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')
                 print(f'Load: {filename[:-3]}')

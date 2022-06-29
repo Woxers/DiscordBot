@@ -1,6 +1,8 @@
 import json
 import os.path
 
+from sys import platform
+
 # Singleton 
 class Config():
     __instance = None
@@ -9,8 +11,11 @@ class Config():
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(Config, cls).__new__(cls)
-            #path = '/home/aptem/VScodeRep/DiscordBot/src/data/settings.json'
-            path = os.getcwdb().decode("utf-8") + '\data\settings.json'
+
+            if platform == "linux" or platform == "linux2":
+                path = '/home/testuser/DiscordBot/src/data/settings.json'
+            else:
+                path = os.getcwdb().decode("utf-8") + '\data\settings.json'
             with open(path, 'r', encoding='utf-8') as settings:
                 cls.__json_string=json.load(settings)
             settings.close()

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from turtle import title
 import discord
 
 from config import Config

@@ -69,11 +69,11 @@ class OwnerCog(commands.Cog):
     async def give_all_access(self, ctx):
         guild = self.bot.get_guild(Config.get('guild', 'id'))
         for member in guild.members:
-            if not (member.bot):
+            if (Database.get_status_and_stage(member.id)['status'] == 'CONFIRMED'):
                 print(member.name)
-                Database.set_status(member.id, 'ACCESS')
-                await self.bot.get_cog('MessagesCog').have_access_message(member)
-                time.sleep(1)
+                # Database.set_status(member.id, 'ACCESS')
+                # await self.bot.get_cog('MessagesCog').have_access_message(member)
+                # time.sleep(1)
         await ctx.send('DONE')
 
     @commands.command(name='test-com')
