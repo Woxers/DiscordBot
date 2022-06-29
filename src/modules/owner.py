@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 
 import discord
 
@@ -61,6 +63,18 @@ class OwnerCog(commands.Cog):
         @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
         async def button_callback(self, interaction, button):
             await interaction.response.send_message("You clicked the button!")
+
+    @commands.command(name='give-all-access')
+    @commands.is_owner()
+    async def give_all_access(self, ctx):
+        guild = self.bot.get_guild(Config.get('guild', 'id'))
+        for member in guild.members:
+            if not (member.bot):
+                print(member.name)
+                Database.set_status(member.id, 'ACCESS')
+                await self.bot.get_cog('MessagesCog').have_access_message(member)
+                time.sleep(1)
+        await ctx.send('DONE')
 
     @commands.command(name='test-com')
     @commands.is_owner()
