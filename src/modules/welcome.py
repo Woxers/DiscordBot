@@ -146,7 +146,7 @@ class WelcomeCog(commands.Cog):
         elif(verification['Status'] == 'ACCESS'):
             nickname = Database.get_user(member.id)['Nickname']
             if (nickname != ''):
-                self.bot.unregister_player(nickname)
+                await self.bot.unregister_player(nickname)
             Database.set_status(member.id, 'CONFIRMED')
             leftStatus = 'HAD ACCESS'
         elif(verification['Status'] == 'CONFIRMED'):

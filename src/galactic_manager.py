@@ -238,7 +238,7 @@ class CustomBot(commands.Bot):
     async def register_player(self, nickname, password):
         return self.client.register_player(nickname, password)
 
-    async def unregister_player(self, nickname, password):
+    async def unregister_player(self, nickname):
         return self.client.unregister_player(nickname)
 
     async def get_online(self):
