@@ -111,6 +111,11 @@ class WelcomeCog(commands.Cog):
                 await member.add_roles(role, reason='Verified Auto-role')
                 await self.bot.get_cog('MessagesCog').send_verified_message_on_join(member)
 
+        if member.avatar == None:
+            avatar = 'https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702'
+        else:
+            avatar = member.avatar.url
+
         # Message to log channel
         if not (Config.get('greetings', 'enabled')):
             return
@@ -122,7 +127,7 @@ class WelcomeCog(commands.Cog):
             created = created.strftime('%Y-%m-%d')
             description = f'**{joinedStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}\n\nInviter: <@{inviter.id}>\nInvite Code: {inviteCode}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='neutral', description=description, author_icon=member.avatar.url, author_name='User joined!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='neutral', description=description, author_icon=avatar, author_name='User joined!', footer_text=footer_text, timestamp=True)
 
     #####################################
     ##           MEMBER LEFT           ##
@@ -131,17 +136,20 @@ class WelcomeCog(commands.Cog):
     async def on_member_remove(self, member):
         print(f'Player left: {member.mention}')
         leftStatus = ''
-        verification = Database.get_status_and_stage(member.id)
-        if (verification['status'] == 'JOINED'):
+        verification = Database.get_user(member.id)
+        if (verification['Status'] == 'JOINED'):
             leftStatus = 'NOT VERIFIED'
-        elif(verification['status'] == 'REJECTED'):
+        elif(verification['Status'] == 'REJECTED'):
             leftStatus = 'REJECTED'
-        elif(verification['status'] == 'SPECTATOR'):
+        elif(verification['Status'] == 'SPECTATOR'):
             leftStatus = 'SPECTATOR'
-        elif(verification['status'] == 'ACCESS'):
-            self.bot.unregister_player(Database.get_user(member.id)['Nickname'])
+        elif(verification['Status'] == 'ACCESS'):
+            nickname = Database.get_user(member.id)['Nickname']
+            if (nickname != ''):
+                self.bot.unregister_player(nickname)
+            Database.set_status(member.id, 'CONFIRMED')
             leftStatus = 'HAD ACCESS'
-        elif(verification['status'] == 'CONFIRMED'):
+        elif(verification['Status'] == 'CONFIRMED'):
             leftStatus = 'VERIFIED'
 
         # Message to log channel
@@ -149,6 +157,12 @@ class WelcomeCog(commands.Cog):
             return
         logsChannel = self.bot.get_channel(Config.get('greetings', 'id'))
         embed = discord.Embed(color = Config.getColor('error'))
+        
+        if member.avatar == None:
+            avatar = 'https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702'
+        else:
+            avatar = member.avatar.url
+
         if (member.bot):
             await self.bot.send_embed(logsChannel, description=f'Goodbye {member.mention}, brother' , color='neutral')
         else:
@@ -156,7 +170,7 @@ class WelcomeCog(commands.Cog):
             created = created.strftime('%Y-%m-%d')
             description = f'**{leftStatus}**\nMention: {member.mention}\nName: {member.name}#{member.discriminator}\nCreated: {created}'
             footer_text=f'GS#Total: {member.guild.member_count} \u200b'
-            await self.bot.send_embed(logsChannel, color='error', description=description, author_icon=member.avatar.url, author_name='User left!', footer_text=footer_text, timestamp=True)
+            await self.bot.send_embed(logsChannel, color='error', description=description, author_icon=avatar, author_name='User left!', footer_text=footer_text, timestamp=True)
 
     #############*********#############
     ##           FUNCTIONS           ##
