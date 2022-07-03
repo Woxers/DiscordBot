@@ -34,6 +34,7 @@ class Database:
         if cls.__instance is None:
             cls.__instance = super(Database, cls).__new__(cls)
             cls.__connection = cls.create_connection()
+            
             # tableList = cls.execute_query(''' SHOW TABLES; ''')
             # if (len(tableList) == 0):
             #     print('There are no tables, create new')
@@ -55,6 +56,7 @@ class Database:
         connection = None
         try:
             connection = pymysql.connect(host=Config.get('mysql', 'host'), user=Config.get('mysql', 'user'), passwd=Config.get('mysql', 'passwd'), db=Config.get('mysql', 'db'))
+            connection.set_charset('utf8')
             logger.info('Connecting to SQLite DB')
         except pymysql.Error as err_string:
             logger.exception(f'The exception in create_connection occured, {err_string}')

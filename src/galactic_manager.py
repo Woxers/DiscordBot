@@ -82,6 +82,15 @@ class McApiClient:
             return 0
         return 1
 
+    # Get online
+    @classmethod
+    def get_online(cls):
+        r = requests.get(f'{cls.url}online', verify=False, data={"token":cls.token})
+        if r.status_code == 501 or r.status_code == 401:
+            print(r.content)
+            return 0
+        return r.text
+
     # Unregister player
     @classmethod
     def unregister_player(cls, nickname):
@@ -123,6 +132,7 @@ class CustomBot(commands.Bot):
     client = McApiClient()
     __invites = None
     __last_deleted_inviter = None
+    __onlineChnannel = None
 
     def __init__(self):
         helpCommand = CustomHelpCommand()
@@ -133,6 +143,16 @@ class CustomBot(commands.Bot):
     @tasks.loop(seconds = 1)
     async def mc_receive_message_loop(self):
         await self.client.receive_mc_events()
+    
+    @tasks.loop(seconds = 1200)
+    async def mc_get_online_loop(self):
+        online = self.client.get_online()
+        jsonn = json.loads(online)
+        if (not jsonn.get('total') is None):
+            online = jsonn.get("total")
+            await self.__onlineChnannel.edit(name=f'Online: {online}')
+        else:
+            await self.__onlineChnannel.edit(name='Stopped')
 
     async def setup_hook(self):
         await self.setup_cogs()
@@ -140,6 +160,8 @@ class CustomBot(commands.Bot):
     async def on_ready(self): 
         await self.upd_invites()
         self.mc_receive_message_loop.start()
+        self.mc_get_online_loop.start()
+        self.__onlineChnannel = self.get_channel(992029425736626176)
         print('Bot connected successfully!')
 
     # Error command not found
@@ -218,6 +240,9 @@ class CustomBot(commands.Bot):
 
     async def unregister_player(self, nickname, password):
         return self.client.unregister_player(nickname)
+
+    async def get_online(self):
+        return self.client.get_online()
 
 bot = CustomBot()
 
