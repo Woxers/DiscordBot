@@ -16,6 +16,7 @@ from discord.ext import tasks
 from os import listdir
 
 from sys import platform
+from libs import Database
 
 from help import CustomHelpCommand
 from discord.ext import commands
@@ -143,6 +144,11 @@ class CustomBot(commands.Bot):
     @tasks.loop(seconds = 1)
     async def mc_receive_message_loop(self):
         await self.client.receive_mc_events()
+
+    @tasks.loop(hours=3)
+    async def reload_connection_loop(self):
+        Database.reload_connection()
+        print('Reloading DB connection')
     
     @tasks.loop(seconds = 1200)
     async def mc_get_online_loop(self):

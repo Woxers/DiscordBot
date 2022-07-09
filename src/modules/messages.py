@@ -15,7 +15,6 @@ class MessagesCog(commands.Cog):
         self.config = Config()
         logger.info('Connecting Messages module')
 
-
         # CHANNEL: Verification
     # Starting interview message
     async def new_confirmed_player(self, member: discord.Member, confirmator: discord.Member):
@@ -119,6 +118,13 @@ class MessagesCog(commands.Cog):
     async def login_mc_server_message(self, member: discord.Member):
         description = f'Произведен вход на сервер с вашего аккаунта'
         await self.bot.send_embed(member, description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='neutral', timestamp=True )
+
+        # CHANNEL: DM
+    # You are restored!
+    async def successfully_restored_message(self, member: discord.Member, nickname, password):
+        description = f'Доступ был восстановлен! Данные для входа в аккаунт:\n \nНикнейм: `{nickname}`\nПароль: `{password}`\n\n*Настоятельно рекомендуем сменить пароль после первого входа на сервер!\n/changepassword <пароль> <новый пароль>*\n\nip: `gsprivate.aboba.host` | Версия игры `1.19`'
+        await self.bot.send_embed(member, description=description, footer_text='GameSpace#Private \u200b', footer_icon='https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702', color='success', timestamp=True )
+
 
     async def unexpected_error_message(self, channel):
         description = 'Произошла непредвиденная ошибка, пожалуйста свяжитесь с администратором <@222746438814138368>'

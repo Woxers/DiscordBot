@@ -50,6 +50,11 @@ class Database:
             #     cls.__stagesList.append(stage[0])
             return cls.__instance
 
+    # Refresh connection
+    @classmethod
+    def reload_connection(cls):
+        cls.__connection = cls.create_connection()
+
     # Connecting database
     @classmethod
     def create_connection(cls):
@@ -97,6 +102,7 @@ class Database:
         dictionary['InviterID'] = result[4]
         dictionary['ConfirmatorID'] = result[5]
         dictionary['Nickname'] = result[6]
+        dictionary['RealNickname'] = result[7]
 
         return dictionary
 

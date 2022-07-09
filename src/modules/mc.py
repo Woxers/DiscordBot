@@ -85,17 +85,15 @@ class McCog(commands.Cog):
     @commands.command(name='online')
     @commands.guild_only()
     async def online(self, ctx):
-        print(1)
         if (ctx.channel.id == 992039494616350772):
             online = await self.bot.get_online()
             jsonn = json.loads(online)
-            print(2)
             if (not jsonn.get('players_list') is None):
-                print(3)
                 string = ''
                 for players in jsonn['players_list']:
-                    string += players['nickname'] + ', '
-                    print(players['nickname'])
+                    if not (players['nickname'] == 'xssluv' or players['nickname'] == 'Woxerss'):
+                        string += f"`{players['nickname']}`" + ', '
+                        print(players['nickname'])
                 if string.endswith(', '):
                     string = string[:-2]
                 await self.bot.send_embed(ctx, title=f'Total: {jsonn["total"]}' , description=f'{string}', color='success')
