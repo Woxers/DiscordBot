@@ -7,3 +7,4 @@ __pycache__
 *.db
 *.code-workspace
 settings.json
+config.json

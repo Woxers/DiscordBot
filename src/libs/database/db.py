@@ -82,7 +82,8 @@ class Database:
     # Check user
     @classmethod
     def check_user(cls, userId: int):
-        return cls.execute_query(f'SELECT CheckUser({userId})')[0][0]
+        res = cls.execute_query(f'SELECT CheckUser({userId})')[0][0]
+        return res
 
     # Add a new user
     @classmethod

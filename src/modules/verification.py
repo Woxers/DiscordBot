@@ -23,7 +23,7 @@ class VerificationCog(commands.Cog):
     @commands.command(name='grant-mc', invoke_without_command='True')
     @commands.has_permissions(administrator = True)
     async def grant_mc(self, ctx, id: int = None):
-        print('grant-mc ' + id)
+        print('grant-mc ' + str(id))
         if Database.check_user(id):
             Database.set_status(id, 'ACCESS')
             guild = self.bot.get_guild(Config.get('guild', 'id'))
