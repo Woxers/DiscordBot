@@ -55,11 +55,11 @@ class Database:
         '''
         Check if nickname already in use
 
-        Return values: 
+        Return values:
+        -------------
+            `1` - exist
 
-            Exist: 1
-
-            Not Exist: 0
+            `0` - not Exist
         '''
         result = cls.execute_query(f'SELECT CheckNickname("{nickname}")')
         if (result == -1):
@@ -73,10 +73,10 @@ class Database:
         Register player on minecraft server
 
         Return values: 
+        -------------
+            `1` - registered
 
-            Registered: 1
-
-            Failed: 0
+            `0` - failed
         '''
         if (cls.authme_check_nickname(nickname)):
             return 0
@@ -100,10 +100,10 @@ class Database:
         Check if discord user already in database
 
         Return values: 
+        -------------
+            `1` - exist
 
-            Exist: 1
-
-            Not Exist: 0
+            `0` - not Exist
         '''
         result = cls.execute_query(f'SELECT CheckUser({user_id})')
         if (result == -1):
@@ -117,14 +117,14 @@ class Database:
         Get discord user info by id 
 
         Return values: 
-
+        -------------
             Success:
 
-                dict: {'id', 'inviter_id', 'status'}
+                dict: `{'id', 'inviter_id', 'status'}`
 
             User not exist:
 
-                None
+                `None`
         '''
         result = cls.execute_query(f'SELECT * FROM discord WHERE id = {user_id}')
         if (result == -1):
@@ -142,14 +142,14 @@ class Database:
         Get discord user info by nickname
 
         Return values: 
-
+        -------------
             Success:
 
-                dict: {'id', 'inviter_id', 'status'}
+                dict: `{'id', 'inviter_id', 'status'}`
 
             User not exist:
 
-                None
+                `None`
         '''
         result = cls.execute_query(f'CALL GetUserByNickname("{nickname}")')
         if (result == -1):
@@ -167,14 +167,14 @@ class Database:
         Get players by discord user id (get mc accounts of user)
 
         Return values: 
-
+        -------------
             Success:
 
-                dict: {'username': {'realname', 'ip', 'lastlogin', 'regdate', 'isLogged'}}
+                dict: `{'username': {'realname', 'ip', 'lastlogin', 'regdate', 'isLogged'}}`
 
             User not exist:
 
-                None
+                `None`
         '''
         result = cls.execute_query(f'CALL GetPlayersByUserID({user_id})')
         if (result == -1):
@@ -190,10 +190,10 @@ class Database:
         Set player's status
 
         Return values: 
+        -------------
+            `1` - success
 
-            Success: 1
-
-            Failed: 0
+            `0` - failed
         '''
         result = cls.execute_query(f'UPDATE discord SET status = "{status}" WHERE id = {user_id} LIMIT 1')
         if (result == -1):
@@ -206,10 +206,10 @@ class Database:
         Update player password
 
         Return values: 
+        -------------
+            `1` - success
 
-            Success: 1
-
-            Failed: 0
+            `0` - failed
         '''
         if (not cls.authme_check_nickname(nickname)):
             return 0
@@ -225,6 +225,6 @@ class Database:
             return 0
         else:
             return 1
-            
+
 db = Database()
 
