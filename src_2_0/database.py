@@ -5,7 +5,7 @@ import hashlib
 import secrets
 
 from config import get_color, config
-from logger import log_info, log_error
+from logger import log_info, log_error, log_critical, log_warning, log_debug
 
 # Singleton
 class Database:
@@ -32,8 +32,8 @@ class Database:
             connection.set_charset('utf8')
             log_info('Connection to MySQL database')
         except pymysql.Error as e:
-            log_error(f'Cannot connect to Database!\n' + str(e))
-            raise SystemExit('[SystemExit] Cannot connect to Database!')
+            log_critical(f'Cannot connect to Database!\n' + str(e))
+            raise SystemExit('Cannot connect to Database!')
         return connection
 
     # Execute SQL query
@@ -47,7 +47,7 @@ class Database:
             cls.__connection.commit()
             return cursor.fetchall()
         except pymysql.Error as err_string:
-            log_error(f'The exception in execute_query occured, {err_string}')
+            log_error(f'Exception in execute_query occured, {err_string}')
             return -1
 
     @classmethod
@@ -89,6 +89,25 @@ class Database:
         # adding to database
         timestamp = int(time.time() * 1000)
         result = cls.execute_query(f'CALL RegisterPlayer({user_id}, "{nickname}", "{password}", "{timestamp}")')
+        if (result == -1):
+            return 0
+        else:
+            return 1
+
+    @classmethod
+    def add_user(cls, user_id: int, inviter_id: int, status: str = None):
+        '''
+        Add new user to database
+
+        Return values: 
+        -------------
+            `1` - added
+
+            `0` - failed
+        '''
+        if (status == None):
+            status = 'joined'
+        result = cls.execute_query(f'CALL AddUser({user_id}, {inviter_id}, "{status}")')
         if (result == -1):
             return 0
         else:
@@ -227,4 +246,3 @@ class Database:
             return 1
 
 db = Database()
-
