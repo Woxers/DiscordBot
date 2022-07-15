@@ -1,11 +1,6 @@
-import asyncio
-from pickle import NONE
-from unittest.mock import NonCallableMagicMock
-import discord
-
 from discord.ext import commands
 
-from logger import log_error, log_info
+from logger import log_error, log_info, log_debug, log_warning
 from config import get_color, config
 
 from database import Database
@@ -32,12 +27,13 @@ class WelcomeCog(commands.Cog):
         self.__invites = await self.bot.guild.invites()
 
     #####################################
-    ##           MEMBER JOIN           ##
+    ##         MEMBER JOINED           ##
     #####################################
     @commands.Cog.listener()
     async def on_member_join(self, member):
         # Ignore if not from target guild
         if (not member.guild == self.bot.guild):
+            log_warning(f'User {member.mention} joined in unknown guild!')
             return
 
         # Find who invited user
@@ -56,16 +52,40 @@ class WelcomeCog(commands.Cog):
                 inviter = invite.inviter
                 self.__invites = await self.bot.guild.invites()
                 break
-            # Invite was NOT delete after use
+            # Invite was NOT deleted after use
             elif invite.uses < sp_inv.uses:
                 inviteCode = invite.code
                 inviter = invite.inviter
                 self.__invites = await self.bot.guild.invites()
                 break
 
-        print(f'Invite info: {inviteCode}  -  {inviter.name}')
+        log_info(f'Invite info: {inviteCode}  -  {inviter.name}')
+
+        print(inviter.id)
 
         # Database check
+        if (Database.ckeck_user(member.id)):
+            log_debug(f'{member.mention} exist in database')
+            db_user = Database.get_user_by_id(member.id)
+            if (db_user['status'].lower() == 'joined'):
+                log_debug('Status: JOINED')
+            elif (db_user['status'].lower() == 'rejected'.lower()):
+                log_debug('Status: REJECTED')
+            elif (db_user['status'].lower() == 'spectator'):
+                log_debug('Status: SPECTATOR')
+            elif (db_user['status'].lower() == 'access'):
+                log_debug('Status: ACCESS')
+            elif (db_user['status'].lower() == 'verified'):
+                log_debug('Status: VERIFIED')
+        else:
+            log_debug(f'{member.mention} not exist in database')
+            if (not Database.add_user(member.id, inviter.id)):
+                log_error(f'[WelcomeCog] Cannot add user {member.id} to database!')
+                return
+            log_debug('Status: JOINED')
+        
+        await member.kick()
+
 
 
     @commands.command(name='test')
@@ -79,7 +99,7 @@ class WelcomeCog(commands.Cog):
         dt['TIMESTAMP'] = '2022-07-15 13:04:06'
         await self.bot.send_json_embed(ctx, 'example/key.txt', replace_dict=dt, delete_after = 10)
 
-    # Function for finding inviter
+    # Find invite with code
     def find_invite_by_code(self, invite_list, code):
         for inv in invite_list:
             if inv.code == code:
