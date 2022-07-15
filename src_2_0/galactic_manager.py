@@ -13,7 +13,7 @@ from logger import log_info, log_error
 from message_formatter import make_embed_from_json_file
 
 class GalacticBot(commands.Bot):
-    guild: discord.guild = None
+    guild = None
 
     def __init__(self):
         intents = discord.Intents.all()
@@ -21,8 +21,11 @@ class GalacticBot(commands.Bot):
         intents.members = True
 
     async def on_ready(self): 
-        self.guild = self.get_guild(config['guild']['id'])
+        self.guild = self.get_current_guild()
         log_info('Bot connected successfully!')
+    
+    def get_current_guild(self):
+        return self.get_guild(config['guild']['id'])
 
     # Error command not found
     async def on_command_error(self, ctx, error):
