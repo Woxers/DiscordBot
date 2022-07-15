@@ -10,6 +10,7 @@ from sys import platform
 from discord.ext import commands
 from config import get_color, config
 from logger import log_info, log_error
+from message_formatter import make_embed_from_json_file
 
 class GalacticBot(commands.Bot):
     guild: discord.guild = None
@@ -22,37 +23,55 @@ class GalacticBot(commands.Bot):
     async def on_ready(self): 
         self.guild = self.get_guild(config['guild']['id'])
         log_info('Bot connected successfully!')
+
+    # Error command not found
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            await self.send_simple_embed(ctx, None, 'Command not found', 'error')
     
-    # Setup modules
+    # What to do in setup
     async def setup_hook(self):
         await self.setup_cogs()
 
     # Connectins extensions
     async def setup_cogs(self):
-        path = os.path.dirname(__file__) + '\modules'
+        '''Setup all modules'''
+        path = os.path.dirname(__file__) + '/modules'
         for filename in os.listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')
                 print(f'Load: {filename[:-3]}')
         print('Done')
 
-    # Error command not found
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandNotFound):
-            embed = discord.Embed()
-            await self.send_simple_embed(ctx, None, 'Command not found', 'error')
+    async def send_json_embed(self, channel: discord.channel, message_path: str, replace_dict: dict = None, delete_after: int = None):
+        '''
+        Send Embeded Message from JSON (dict) to discord.channel
+        
+            message_path - Message path in resources/messages
 
-    # Send embed from dict
-    async def send_json_embed(self, channel: discord.channel, embed_dict: dict, replace_dict: dict = None, delete_after: int = None):
-        if (not replace_dict == None):
-            json_string = json.dumps(embed_dict)
-            json_string = json.format(**replace_dict)
-            embed_dict = json.loads(json_string)
-        embed = discord.Embed.from_dict(dict)
-        return await channel.send(embed = embed)
+            replace_dict - Replace <key> on dict['key']
 
-    # Send simple embed
-    async def send_simple_embed(self, channel: discord.channel, title: str = None, description: str = None, color: str = None, duration: int = None):
+            delete_after - Delete message after N seconds
+
+        Return values:
+
+            discord.message
+        '''
+        embed = make_embed_from_json_file(message_path, replace_dict)
+        return await channel.send(embed = embed, delete_after = delete_after)
+
+    async def send_simple_embed(self, channel: discord.channel, title: str = None, description: str = None, color: str = None, delete_after: int = None):
+        '''
+        Send Embeded Message to discord.channel
+        
+            color - 'neutral', 'success', 'error
+
+            delete_after - Delete message after N seconds
+
+        Return values:
+
+            discord.message
+        '''
         embed = discord.Embed()
         if (title != None):
             embed.title = title
@@ -61,32 +80,7 @@ class GalacticBot(commands.Bot):
         if (color != None):
             embed.color = get_color(color)
         a = embed.to_dict()
-        return await channel.send(embed = embed, delete_after = duration)
-
-    # Send embed message
-    async def send_embed(self, channel: discord.channel, title = None, description = None, duration: int = None, color = None, footer_text = None, footer_icon = None, author_name = None, author_icon = None, timestamp: bool = None, view = None):
-        print(f'Sending embeded message in channel {channel}')
-        embed = discord.Embed()
-        if (title != None):
-            embed.title = title
-        if (description != None):
-            embed.description = description
-        if (color != None):
-            embed.color = color(color)
-        if (footer_text != None):
-            if (footer_icon != None):
-                embed.set_footer(text = footer_text, icon_url= footer_icon)
-            else:
-                embed.set_footer(text = footer_text)
-        if (author_name != None):
-            if (author_icon != None):
-                embed.set_author(name=author_name, icon_url=author_icon)
-            else:
-                embed.set_author(name=author_name)
-        if (timestamp == True):
-            embed.timestamp = datetime.datetime.utcnow()
+        return await channel.send(embed = embed, delete_after = delete_after)
         
-        return await channel.send(embed = embed, view = view, delete_after = duration)
-
 galactic_bot = GalacticBot()
 galactic_bot.run(config['bot']['token'])

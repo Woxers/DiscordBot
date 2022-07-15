@@ -4,7 +4,7 @@ import os.path
 from shutil import copyfile
 
 config_path = os.path.dirname(__file__) + '/data/config.json'
-example_config_path = os.path.dirname(__file__) + '/resources/config.json'
+example_config_path = os.path.dirname(__file__) + '/resources/config/config.json'
 
 config = None
 
@@ -16,13 +16,11 @@ class ConfigLoader:
             print('[ConfigLoader] Read config file')
             with open(config_path, 'r') as file:
                 config = json.load(file)
-            file.close()
         else:
             print('[ConfigLoader] Config file doesnt exist, create new one')
             copyfile(example_config_path, config_path)
             with open(config_path, 'r') as file:
                 config = json.load(file)
-            file.close()
 
     # Reloads config file
     def reload(self):
