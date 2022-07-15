@@ -200,5 +200,31 @@ class Database:
             return 0
         else:
             return 1
+    
+    def set_new_player_password(cls, nickname: str, password: str):
+        '''
+        Update player password
 
+        Return values: 
+
+            Success: 1
+
+            Failed: 0
+        '''
+        if (not cls.authme_check_nickname(nickname)):
+            return 0
+        # authme SHA256 encryption
+        salt = secrets.token_hex(8)
+        hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        hash += salt
+        hash = hashlib.sha256(hash.encode('utf-8')).hexdigest()
+        password = f'$SHA${salt}${hash}'
+        # Update value in database
+        result = cls.execute_query(f'UPDATE authme SET password = "{password}" WHERE username = "{nickname}" LIMIT 1')
+        if (result == -1):
+            return 0
+        else:
+            return 1
+            
 db = Database()
+
