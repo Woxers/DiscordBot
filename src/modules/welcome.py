@@ -38,6 +38,9 @@ class WelcomeCog(commands.Cog):
     #####################################
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        if (not member.guild.id == Config.get('guild', 'id')):
+            return
+
         print(f'Player joined: {member.mention}')
 
         # Who invited
@@ -134,6 +137,8 @@ class WelcomeCog(commands.Cog):
     #####################################
     @commands.Cog.listener()
     async def on_member_remove(self, member):
+        if (not member.guild.id == Config.get('guild', 'id')):
+            return
         print(f'Player left: {member.mention}')
         leftStatus = ''
         verification = Database.get_user(member.id)
