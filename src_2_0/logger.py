@@ -1,3 +1,5 @@
+import traceback
+import inspect
 import os.path
 
 from datetime import datetime
@@ -12,24 +14,45 @@ def write(level: str, message: str):
 
 # Only if debug mode enabled
 def log_debug(message:str):
-    if (DEBUG_MODE):
-        print(message)
-        write('DEBUG', message)
+    if (not DEBUG_MODE):
+        return
+    try:
+        caller_file = inspect.stack()[1][1].split('/')[-1]
+    except Exception:
+        caller_file = 'unknown'
+    print(f'[DEBUG] [{caller_file}] {message}')
+    write('DEBUG', f'[{caller_file}] {message}')
 
 def log_info(message: str):
-    print(message)
-    write('INFO', message)
+    try:
+        caller_file = inspect.stack()[1][1].split('/')[-1]
+    except Exception:
+        caller_file = 'unknown'
+    print(f'[INFO] [{caller_file}] {message}')
+    write('INFO', f'[{caller_file}] {message}')
 
 def log_warning(message: str):
-    print(message)
-    write('WARNING', message)
+    try:
+        caller_file = inspect.stack()[1][1].split('/')[-1]
+    except Exception:
+        caller_file = 'unknown'
+    print(f'[WARNING] [{caller_file}] {message}')
+    write('WARNING', f'[{caller_file}] {message}')
 
 def log_error(message: str):
-    print(message)
-    write('ERROR', message)
+    try:
+        caller_file = inspect.stack()[1][1].split('/')[-1]
+    except Exception:
+        caller_file = 'unknown'
+    print(f'[ERROR] [{caller_file}] {message}')
+    write('ERROR', f'[{caller_file}] {message}')
 
 def log_critical(message: str):
-    print(message)
-    write('CRITICAL', message)
+    try:
+        caller_file = inspect.stack()[1][1].split('/')[-1]
+    except Exception:
+        caller_file = 'unknown'
+    print(f'[CRITICAL] [{caller_file}] {message}')
+    write('CRITICAL', f'[CRITICAL] [{caller_file}] {message}')
 
-write('INIT', 'Start logging')
+write('WARNING', '[logger.py] Start logging!')
