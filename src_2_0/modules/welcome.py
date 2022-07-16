@@ -77,10 +77,12 @@ class WelcomeCog(commands.Cog):
                 log_debug('Status: ACCESS')
             elif (db_user['status'].lower() == 'verified'):
                 log_debug('Status: VERIFIED')
+            else:
+                log_error(f'Unable to identify user status: {db_user["status"]}')
         else:
             log_debug(f'{member.mention} not exist in database')
             if (not Database.add_user(member.id, inviter.id)):
-                log_error(f'[WelcomeCog] Cannot add user {member.id} to database!')
+                log_error(f'Cannot add user {member.id} to database!')
                 return
             log_debug('Status: JOINED')
         
@@ -94,7 +96,7 @@ class WelcomeCog(commands.Cog):
         dt = dict()
         dt['USER_NAME'] = 'Aptem'
         dt['USER_MENTION'] = '<@222746438814138368>'
-        dt['URL'] = 'https://ictis.alex-b.me/'
+        dt['URL'] = 'https://github.com/Woxerss'
         dt['COLOR'] = get_color('neutral')
         dt['TIMESTAMP'] = '2022-07-15 13:04:06'
         await self.bot.send_json_embed(ctx, 'example/key.txt', replace_dict=dt, delete_after = 10)

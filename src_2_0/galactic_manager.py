@@ -43,8 +43,8 @@ class GalacticBot(commands.Bot):
         for filename in os.listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')
-                print(f'Load: {filename[:-3]}')
-        print('Done')
+                log_info(f'{filename[:-3].title()} module has been loaded')
+        log_info('All modules has been successfully loaded!')
 
     async def send_json_embed(self, channel: discord.channel, message_path: str, replace_dict: dict = None, delete_after: int = None):
         '''

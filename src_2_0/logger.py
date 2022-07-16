@@ -55,4 +55,6 @@ def log_critical(message: str):
     print(f'[CRITICAL] [{caller_file}] {message}')
     write('CRITICAL', f'[CRITICAL] [{caller_file}] {message}')
 
-write('WARNING', '[logger.py] Start logging!')
+write('WARNING', '[logger.py] #################################################')
+write('WARNING', '[logger.py] ##                START LOGGING                ##')
+write('WARNING', '[logger.py] #################################################')
