@@ -1,0 +1,10 @@
+TIMESTAMP, SUCCESS_COLOR
+{
+    "description": "Рады снова Вас видеть! Ваш статус верификации был восстановлен.",
+    "color": %%SUCCESS_COLOR%%,
+    "footer": {
+        "icon_url": "https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702",
+        "text": "GameSpace#Private \u200b"
+    },
+    "timestamp": "%%TIMESTAMP%%"
+}

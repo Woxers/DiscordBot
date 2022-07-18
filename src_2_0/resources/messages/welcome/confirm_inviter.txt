@@ -1,0 +1,11 @@
+INVITE_CODE, MEMBER_ID, MEMBER_MENTION, NEUTRAL_COLOR, TIMESTAMP
+{
+    "title": "Приглашен игрок!",
+    "description": "По вашему приглашению `%%INVITE_CODE%%` присоединился новый пользователь. Готовы ли вы за него поручиться? В таком случае пользователь пройдет верификацию в упрощенном формате.\n\n*User* ID: `%%MEMBER_ID%%` - %%MEMBER_MENTION%%",
+    "footer": {
+        "icon_url": "https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702",
+        "text": "GameSpace#Private \u200b"
+    },
+    "color": %%NEUTRAL_COLOR%%,
+    "timestamp": "%%TIMESTAMP%%"
+}
