@@ -1,3 +1,4 @@
+import asyncio
 from discord.ext import commands
 
 from logger import log_error, log_info, log_debug, log_warning
@@ -18,11 +19,19 @@ class WelcomeCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
+        # Ignore if not from target guild
+        if (not invite.guild == self.bot.guild):
+            log_warning(f'Invite {invite.code} created in unknown guild!')
+            return
         log_info(f'Invite was created: {invite.code}')
         self.__invites = await self.bot.guild.invites()
 
     @commands.Cog.listener()
     async def on_invite_delete(self, invite):
+        # Ignore if not from target guild
+        if (not invite.guild == self.bot.guild):
+            log_warning(f'Invite {invite.code} deleted in unknown guild!')
+            return
         log_info(f'Invite was deleted: {invite.code}')
         self.__invites = await self.bot.guild.invites()
 
@@ -61,34 +70,90 @@ class WelcomeCog(commands.Cog):
 
         log_info(f'Invite info: {inviteCode}  -  {inviter.name}')
 
-        print(inviter.id)
-
         # Database check
         if (Database.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
             db_user = Database.get_user_by_id(member.id)
+            # Newbie joined
             if (db_user['status'].lower() == 'joined'):
-                log_debug('Status: JOINED')
+                # Add role Joined
+                role = self.bot.get_role_by_id(config['roles']['candidate'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_newbie.txt')
+                dt = {'INVITE_CODE': inviteCode, 'MEMBER_ID': member.id, 'MEMBER_MENTION': member.mention}
+                await self.bot.send_json_embed(inviter, 'welcome/confirm_inviter.txt', replace_dict=dt)
+            # Rejected joined
             elif (db_user['status'].lower() == 'rejected'.lower()):
-                log_debug('Status: REJECTED')
+                # Add role Rejected
+                role = self.bot.get_role_by_id(config['roles']['rejected'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_rejected.txt')
+            # Spectator joined
             elif (db_user['status'].lower() == 'spectator'):
-                log_debug('Status: SPECTATOR')
+                # Add role Spectator
+                role = self.bot.get_role_by_id(config['roles']['spectator'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_spectator.txt')
+            # Access joined
             elif (db_user['status'].lower() == 'access'):
-                log_debug('Status: ACCESS')
+                Database.set_status_by_user_id(member.id, 'verified')
+                # Add role Verified
+                role = self.bot.get_role_by_id(config['roles']['verified'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_access.txt')
+                await self.bot.send_json_embed(member, 'welcome/access_denied.txt')
+            # Verified joined
             elif (db_user['status'].lower() == 'verified'):
-                log_debug('Status: VERIFIED')
+                # Add role Verified
+                role = self.bot.get_role_by_id(config['roles']['verified'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_verified.txt')
             else:
                 log_error(f'Unable to identify user status: {db_user["status"]}')
         else:
+            # Add to database
             log_debug(f'{member.mention} not exist in database')
             if (not Database.add_user(member.id, inviter.id)):
                 log_error(f'Cannot add user {member.id} to database!')
-                return
-            log_debug('Status: JOINED')
+            # Add role Candidate
+            role = self.bot.get_role_by_id(config['roles']['candidate'])
+            await member.add_roles(role, reason='Auto-Role')
+            log_debug(f'Added role {role.name}')
+            # Send messages
+            await self.bot.send_json_embed(member, 'welcome/member_joined_newbie.txt')
+            dt = {'INVITE_CODE': inviteCode, 'MEMBER_ID': member.id, 'MEMBER_MENTION': member.mention}
+            await self.bot.send_json_embed(inviter, 'welcome/confirm_inviter.txt', replace_dict=dt)
         
-        await member.kick()
+        try:
+            # User Joined log-channel message!
+            dt = dict()
+            dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
+            dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
+            dt['TOTAL'] = self.bot.guild.member_count
+            dt['STATUS'] = db_user['status'].upper()
+            dt['MEMBER_MENTION'] = member.mention
+            dt['MEMBER_NAME'] = member.name
+            dt['MEMBER_DISCRIMINATOR'] = member.discriminator
+            dt['CREATED'] = member.created_at.strftime('%Y-%m-%d')
+            dt['INVITER_MENTION'] = inviter.mention
+            dt['INVITE_CODE'] = inviteCode
+            dt['COLOR'] = role.color.value
+            await self.bot.send_json_embed(self.bot.get_channel_by_id(config['channels']['join_logs']['id']), 'welcome/log_joined.txt', replace_dict=dt)
+        except Exception as e:
+            log_error(e)
 
-
+        # await asyncio.sleep(10)
+        # await member.kick()
 
     @commands.command(name='test')
     @commands.has_permissions(administrator = True)
@@ -98,7 +163,7 @@ class WelcomeCog(commands.Cog):
         dt['USER_MENTION'] = '<@222746438814138368>'
         dt['URL'] = 'https://github.com/Woxerss'
         dt['COLOR'] = get_color('neutral')
-        dt['TIMESTAMP'] = '2022-07-15 13:04:06'
+        #dt['TIMESTAMP'] = '2022-07-15 13:04:06'
         await self.bot.send_json_embed(ctx, 'example/key.txt', replace_dict=dt, delete_after = 10)
 
     # Find invite with code
