@@ -62,10 +62,25 @@ class Database:
         try:
             connection = pymysql.connect(host=Config.get('mysql', 'host'), user=Config.get('mysql', 'user'), passwd=Config.get('mysql', 'passwd'), db=Config.get('mysql', 'db'))
             connection.set_charset('utf8')
-            logger.info('Connecting to SQLite DB')
-        except pymysql.Error as err_string:
-            logger.exception(f'The exception in create_connection occured, {err_string}')
+            logger.info('Connection to MySQL database')
+        except pymysql.Error as e:
+            logger.critical(f'Cannot connect to Database!\n' + str(e))
+            raise SystemExit('Cannot connect to Database!')
         return connection
+
+    # Execute SQL query
+    @classmethod
+    def execute_query(cls, query):
+        if (cls.__connection.open == False):
+            cls.reload_connection()
+        cursor = cls.__connection.cursor()
+        try:
+            cursor.execute(query)
+            cls.__connection.commit()
+            return cursor.fetchall()
+        except pymysql.Error as err_string:
+            logger.exception(f'Exception in execute_query occured, {err_string}')
+            return -1
 
     # Execute SQL query
     @classmethod
