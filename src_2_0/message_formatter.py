@@ -43,7 +43,7 @@ def make_embed_from_json_file(message_path: str, replace_dict: str = None):
         # If there is no replace_dict
         if (replace_dict == None):
             replace_dict = dict()
-        # Add to dict special keys if not exist
+        # Add to dict default keys if not exist
         if (not replace_dict.get('TIMESTAMP')):
             replace_dict['TIMESTAMP'] = f'{(datetime.now() - timedelta(hours=3)):%Y-%m-%d %H:%M:%S}'
         if (not replace_dict.get('COLOR')):
