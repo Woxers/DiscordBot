@@ -72,7 +72,11 @@ class WelcomeCog(commands.Cog):
         if (Database.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
             db_user = Database.get_user_by_id(member.id)
-            Database.set_active(member.id, 1)
+
+            # Set active status
+            if (not Database.set_active(member.id, 1)):
+                log_error(f'Error while set_active status in member joined')
+
             # Newbie joined
             if (db_user['status'].lower() == 'joined'):
                 # Add role Joined
@@ -132,9 +136,10 @@ class WelcomeCog(commands.Cog):
             await self.bot.send_json_embed(member, 'welcome/member_joined_newbie.txt')
             dt = {'INVITE_CODE': inviteCode, 'MEMBER_ID': member.id, 'MEMBER_MENTION': member.mention}
             await self.bot.send_json_embed(inviter, 'welcome/confirm_inviter.txt', replace_dict=dt)
+            db_user = {'status': 'joined'}
         
+        # User Joined log-channel message!
         try:
-            # User Joined log-channel message!
             dt = dict()
             dt['INVITER_MENTION'] = inviter.mention
             dt['INVITE_CODE'] = inviteCode
@@ -149,7 +154,7 @@ class WelcomeCog(commands.Cog):
             dt['COLOR'] = role.color.value
             await self.bot.send_json_embed(self.bot.get_channel_by_id(config['channels']['join_logs']['id']), 'welcome/log_joined.txt', replace_dict=dt)
         except Exception as e:
-            log_error(e)
+            log_error(f'Error while sending Join-Log message: {e}')
 
         await asyncio.sleep(5)
         await member.kick()
@@ -165,7 +170,10 @@ class WelcomeCog(commands.Cog):
             return
         
         log_info(f'User left: {member.mention}')
-        Database.set_active(member.id, 0)
+
+        # Set active status
+        if (not Database.set_active(member.id, 0)):
+            log_error(f'Error while set_active status in member left')
 
         # Database check
         if (Database.ckeck_user(member.id)):
@@ -192,8 +200,8 @@ class WelcomeCog(commands.Cog):
         else:
             log_debug(f'{member.mention} not exist in database')
 
+        # User Left log-channel message!
         try:
-            # User Joined log-channel message!
             inviter = self.bot.get_member_by_id(db_user['inviter_id'])
             dt = dict()
             dt['INVITER_MENTION'] = inviter.mention
@@ -208,11 +216,8 @@ class WelcomeCog(commands.Cog):
             dt['TOTAL'] = self.bot.guild.member_count
             await self.bot.send_json_embed(self.bot.get_channel_by_id(config['channels']['join_logs']['id']), 'welcome/log_left.txt', replace_dict=dt)
         except Exception as e:
-            log_error(e)
+            log_error(f'Error while sending Left-Log message: {e}')
         
-            
-
-
     @commands.command(name='test')
     @commands.has_permissions(administrator = True)
     async def test(self, ctx, arg = None):
