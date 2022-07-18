@@ -3,6 +3,10 @@ import json
 
 import discord
 
+from datetime import datetime, timedelta
+
+from config import get_color
+
 from logger import log_error
 
 def make_embed_from_json_file(message_path: str, replace_dict: str = None):
@@ -38,8 +42,20 @@ def make_embed_from_json_file(message_path: str, replace_dict: str = None):
         message_string = parts[2]
         # If there is no replace_dict
         if (replace_dict == None):
-            log_error(f'While sending Embeded Message from JSON. There is no replace_dict.\n Missing keys: {keys}')
-            return None
+            replace_dict = dict()
+        # Add to dict special keys if not exist
+        if (not replace_dict.get('TIMESTAMP')):
+            replace_dict['TIMESTAMP'] = f'{(datetime.now() - timedelta(hours=3)):%Y-%m-%d %H:%M:%S}'
+        if (not replace_dict.get('COLOR')):
+            replace_dict['COLOR'] = '7506394'
+        if (not replace_dict.get('NEUTRAL_COLOR')):
+            replace_dict['NEUTRAL_COLOR'] = get_color('neutral')
+        if (not replace_dict.get('ERROR_COLOR')):
+            replace_dict['ERROR_COLOR'] = get_color('error')
+        if (not replace_dict.get('SUCCESS_COLOR')):
+            replace_dict['SUCCESS_COLOR'] = get_color('success')
+        if (not replace_dict.get('AVATAR_URL')):
+            replace_dict['ICON_URL'] = "https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=663&height=663"
         # If keys are missing in replace_dict
         if (keys - replace_dict.keys()):
             log_error(f'While sending Embeded Message from JSON. Keys are missing in replace_dict.\n Missing keys: {keys - replace_dict.keys()}')
@@ -51,7 +67,12 @@ def make_embed_from_json_file(message_path: str, replace_dict: str = None):
     try:
         message_dict = json.loads(message_string)
     except Exception as e:
-        log_error(f'Exception while sending Embeded Message from JSON. String:\n{message_string}')
+        log_error(f'Exception while sending Embeded Message from JSON. Json Message:\n{message_string}')
         return None
     # Sending embeded message to discord.channel
-    return discord.Embed.from_dict(message_dict)
+    try:
+        embed = discord.Embed.from_dict(message_dict)
+    except Exception as e:
+        log_error(f'Exception while converting Dict to discord.Embed.\nException: {e}\nJson Message:\n{message_string}')
+        return None
+    return embed
