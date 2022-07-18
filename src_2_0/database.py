@@ -156,6 +156,49 @@ class Database:
             return user
 
     @classmethod
+    def get_invited_count_by_id(cls, user_id: int):
+        '''
+        Get invited count by user id
+
+        Return values: 
+        -------------
+            Success:
+
+                'int'
+
+            User not exist:
+
+                `None`
+        '''
+        result = cls.execute_query(f'SELECT GetInvitedByUserCount({user_id})')
+        if (result == -1):
+            return None
+        else:
+            return result[0][0]
+
+    @classmethod
+    def get_invited_players_count_by_id(cls, user_id: int):
+        '''
+        Get invited PLAYERS count by user id
+
+        Return values: 
+        -------------
+            Success:
+
+                'int'
+
+            User not exist:
+
+                `None`
+        '''
+        result = cls.execute_query(f'SELECT GetInvitedPlayersCountByUser({user_id})')
+        if (result == -1):
+            return None
+        else:
+            return result[0][0]
+
+
+    @classmethod
     def get_user_by_nickname(cls, nickname: str):
         '''
         Get discord user info by nickname
@@ -204,6 +247,7 @@ class Database:
                 players[player_info[0]] = {'realname': player_info[1], 'ip': player_info[2], 'lastlogin': player_info[3], 'regdate': player_info[4], 'isLogged': player_info[5]}
             return players
 
+    @classmethod
     def set_status_by_user_id(cls, user_id: int, status: str):
         '''
         Set player's status
