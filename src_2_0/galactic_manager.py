@@ -27,6 +27,15 @@ class GalacticBot(commands.Bot):
     def get_current_guild(self):
         return self.get_guild(config['guild']['id'])
 
+    def get_role_by_id(self, id: int):
+        return self.guild.get_role(id)
+
+    def get_member_by_id(self, id: int):
+        return self.guild.get_member(id)
+
+    def get_channel_by_id(self, id: int):
+        return self.guild.get_channel(id)
+
     # Error command not found
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
