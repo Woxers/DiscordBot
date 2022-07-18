@@ -45,13 +45,11 @@ class WelcomeCog(commands.Cog):
             log_warning(f'User {member.mention} joined in unknown guild!')
             return
 
-        # Find who invited user
         log_info(f'User joined: {member.mention}')
-            # Who invited
+
+        # Find who invited user
         invites_before_join = self.__invites
         invites_after_join = await member.guild.invites()
-        inviteCode = None
-        inviter = None
             # Compare invites
         for invite in invites_before_join:
             sp_inv = self.find_invite_by_code(invites_after_join, invite.code)
@@ -74,6 +72,7 @@ class WelcomeCog(commands.Cog):
         if (Database.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
             db_user = Database.get_user_by_id(member.id)
+            Database.set_active(member.id, 1)
             # Newbie joined
             if (db_user['status'].lower() == 'joined'):
                 # Add role Joined
@@ -137,23 +136,82 @@ class WelcomeCog(commands.Cog):
         try:
             # User Joined log-channel message!
             dt = dict()
+            dt['INVITER_MENTION'] = inviter.mention
+            dt['INVITE_CODE'] = inviteCode
             dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
             dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
-            dt['TOTAL'] = self.bot.guild.member_count
             dt['STATUS'] = db_user['status'].upper()
             dt['MEMBER_MENTION'] = member.mention
             dt['MEMBER_NAME'] = member.name
             dt['MEMBER_DISCRIMINATOR'] = member.discriminator
             dt['CREATED'] = member.created_at.strftime('%Y-%m-%d')
-            dt['INVITER_MENTION'] = inviter.mention
-            dt['INVITE_CODE'] = inviteCode
+            dt['TOTAL'] = self.bot.guild.member_count
             dt['COLOR'] = role.color.value
             await self.bot.send_json_embed(self.bot.get_channel_by_id(config['channels']['join_logs']['id']), 'welcome/log_joined.txt', replace_dict=dt)
         except Exception as e:
             log_error(e)
 
-        # await asyncio.sleep(10)
-        # await member.kick()
+        await asyncio.sleep(5)
+        await member.kick()
+
+    #####################################
+    ##           MEMBER LEFT           ##
+    #####################################
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        # Ignore if not from target guild
+        if (not member.guild == self.bot.guild):
+            log_warning(f'User {member.mention} joined in unknown guild!')
+            return
+        
+        log_info(f'User left: {member.mention}')
+        Database.set_active(member.id, 0)
+
+        # Database check
+        if (Database.ckeck_user(member.id)):
+            log_debug(f'{member.mention} exist in database')
+            db_user = Database.get_user_by_id(member.id)
+            # Newbie left
+            if (db_user['status'].lower() == 'joined'):
+                pass
+            # Rejected left
+            elif (db_user['status'].lower() == 'rejected'.lower()):
+                pass
+            # Spectator left
+            elif (db_user['status'].lower() == 'spectator'):
+                pass
+            # Access left
+            elif (db_user['status'].lower() == 'access'):
+                pass
+                # TODO: Revoke access to mc server!
+            # Verified left
+            elif (db_user['status'].lower() == 'verified'):
+                pass
+            else:
+                log_error(f'Unable to identify user status: {db_user["status"]}')
+        else:
+            log_debug(f'{member.mention} not exist in database')
+
+        try:
+            # User Joined log-channel message!
+            inviter = self.bot.get_member_by_id(db_user['inviter_id'])
+            dt = dict()
+            dt['INVITER_MENTION'] = inviter.mention
+            dt['INVITE_CODE'] = 'None'
+            dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
+            dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
+            dt['STATUS'] = db_user['status'].upper()
+            dt['MEMBER_MENTION'] = member.mention
+            dt['MEMBER_NAME'] = member.name
+            dt['MEMBER_DISCRIMINATOR'] = member.discriminator
+            dt['CREATED'] = member.created_at.strftime('%Y-%m-%d')
+            dt['TOTAL'] = self.bot.guild.member_count
+            await self.bot.send_json_embed(self.bot.get_channel_by_id(config['channels']['join_logs']['id']), 'welcome/log_left.txt', replace_dict=dt)
+        except Exception as e:
+            log_error(e)
+        
+            
+
 
     @commands.command(name='test')
     @commands.has_permissions(administrator = True)
