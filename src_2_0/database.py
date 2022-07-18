@@ -139,7 +139,7 @@ class Database:
         -------------
             Success:
 
-                dict: `{'id', 'inviter_id', 'status'}`
+                dict: `{'id', 'inviter_id', 'status', 'active'}`
 
             User not exist:
 
@@ -153,6 +153,7 @@ class Database:
             user['id'] = result[0][0]
             user['inviter_id'] = result[0][1]
             user['status'] = result[0][2]
+            user['active'] = result[0][3]
             return user
 
     @classmethod
@@ -197,6 +198,8 @@ class Database:
         else:
             return result[0][0]
 
+    
+
 
     @classmethod
     def get_user_by_nickname(cls, nickname: str):
@@ -207,7 +210,7 @@ class Database:
         -------------
             Success:
 
-                dict: `{'id', 'inviter_id', 'status'}`
+                dict: `{'id', 'inviter_id', 'status', 'active'}`
 
             User not exist:
 
@@ -221,6 +224,7 @@ class Database:
             user['id'] = result[0][0]
             user['inviter_id'] = result[0][1]
             user['status'] = result[0][2]
+            user['active'] = result[0][3]
             return user
 
     @classmethod
@@ -263,7 +267,8 @@ class Database:
             return 0
         else:
             return 1
-    
+
+    @classmethod
     def set_new_player_password(cls, nickname: str, password: str):
         '''
         Update player password
@@ -284,6 +289,26 @@ class Database:
         password = f'$SHA${salt}${hash}'
         # Update value in database
         result = cls.execute_query(f'UPDATE authme SET password = "{password}" WHERE username = "{nickname}" LIMIT 1')
+        if (result == -1):
+            return 0
+        else:
+            return 1
+
+    @classmethod
+    def set_active(cls, user_id: int, active: bool):
+        '''
+        Update player password
+
+        Return values: 
+        -------------
+            `1` - success
+
+            `0` - failed
+        '''
+        if (not cls.ckeck_user(user_id)):
+            return 0
+        # Update value in database
+        result = cls.execute_query(f'UPDATE discord SET active = {active} WHERE id = {user_id} LIMIT 1')
         if (result == -1):
             return 0
         else:
