@@ -1,28 +1,28 @@
 {
     "bot": {
         "token": "",
-        "prefix": "!"
+        "prefix": "?"
     },
     "colors": {
-        "error": "0xCB3D35",
         "neutral": "0xFFFFFE",
-        "success": "0x538A1B"
+        "success": "0x538A1B",
+        "error": "0xCB3D35"
     },
     "database": {
-        "db": "",
         "host": "",
+        "user": "",
         "passwd": "",
-        "user": ""
+        "db_name": ""
     },
     "guild": {
         "id": 508721497360171018
     },
     "roles": {
         "candidate": 866706203206746153,
-        "player": 866702039466901524,
+        "access": 866702039466901524,
         "rejected": 985907462622310410,
         "spectator": 978723198206099467,
-        "verified": "978723329294872646"
+        "verified": 978723329294872646
     },
     "channels": {
         "join_logs": {

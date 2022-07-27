@@ -1,15 +1,11 @@
 import os
-import time
-import json
-import datetime
 
 import discord
 
-from sys import platform
-
 from discord.ext import commands
+
 from config import get_color, config
-from logger import log_info, log_error
+from logger import log_info, log_error, log_warning
 from message_formatter import make_embed_from_json_file
 
 class GalacticBot(commands.Bot):

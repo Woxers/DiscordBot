@@ -1,10 +1,12 @@
 # Папки
 *build-*
 __pycache__
+src_online_bot
 
 # Файлы
 *.log
 *.db
 *.code-workspace
 settings.json
+test.py
 
