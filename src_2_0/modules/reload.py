@@ -18,6 +18,7 @@ class ReloadCog(commands.Cog):
         log_info("Reload Module successfully loaded!")
 
     @commands.command()
+    @commands.is_owner() 
     async def reload(self, ctx, *args):
         extensions = list()
         for extension in self.bot.extensions:
