@@ -73,10 +73,6 @@ class WelcomeCog(commands.Cog):
             log_debug(f'{member.mention} exist in database')
             db_user = Database.get_user_by_id(member.id)
 
-            # Set active status
-            if (not Database.set_active(member.id, 1)):
-                log_error(f'Error while set_active status in member joined')
-
             # Newbie joined
             if (db_user['status'].lower() == 'joined'):
                 # Add role Joined
@@ -105,6 +101,16 @@ class WelcomeCog(commands.Cog):
                 await self.bot.send_json_embed(member, 'welcome/member_joined_spectator.txt')
             # Access joined
             elif (db_user['status'].lower() == 'access'):
+                Database.set_status_by_user_id(member.id, 'verified')
+                # Add role Verified
+                role = self.bot.get_role_by_id(config['roles']['verified'])
+                await member.add_roles(role, reason='Auto-Role')
+                log_debug(f'Added role {role.name}')
+                # Send messages
+                await self.bot.send_json_embed(member, 'welcome/member_joined_access.txt')
+                await self.bot.send_json_embed(member, 'welcome/access_denied.txt')
+            # Lost Access joined
+            elif (db_user['status'].lower() == 'lost_access'):
                 Database.set_status_by_user_id(member.id, 'verified')
                 # Add role Verified
                 role = self.bot.get_role_by_id(config['roles']['verified'])
@@ -156,9 +162,6 @@ class WelcomeCog(commands.Cog):
         except Exception as e:
             log_error(f'Error while sending Join-Log message: {e}')
 
-        await asyncio.sleep(5)
-        await member.kick()
-
     #####################################
     ##           MEMBER LEFT           ##
     #####################################
@@ -171,14 +174,11 @@ class WelcomeCog(commands.Cog):
         
         log_info(f'User left: {member.mention}')
 
-        # Set active status
-        if (not Database.set_active(member.id, 0)):
-            log_error(f'Error while set_active status in member left')
-
         # Database check
         if (Database.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
             db_user = Database.get_user_by_id(member.id)
+
             # Newbie left
             if (db_user['status'].lower() == 'joined'):
                 pass
@@ -190,8 +190,13 @@ class WelcomeCog(commands.Cog):
                 pass
             # Access left
             elif (db_user['status'].lower() == 'access'):
-                pass
+                Database.set_status_by_user_id(member.id, 'lost_access')
                 # TODO: Revoke access to mc server!
+            elif (db_user['status'].lower() == 'lost_access'):
+                pass
+            # Verified left
+            elif (db_user['status'].lower() == 'verified'):
+                pass
             # Verified left
             elif (db_user['status'].lower() == 'verified'):
                 pass
@@ -208,7 +213,10 @@ class WelcomeCog(commands.Cog):
             dt['INVITE_CODE'] = 'None'
             dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
             dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
-            dt['STATUS'] = db_user['status'].upper()
+            if (db_user['status'] == 'lost_access'):
+                dt['STATUS'] = 'ACCESS'
+            else:
+                dt['STATUS'] = db_user['status'].upper()
             dt['MEMBER_MENTION'] = member.mention
             dt['MEMBER_NAME'] = member.name
             dt['MEMBER_DISCRIMINATOR'] = member.discriminator
