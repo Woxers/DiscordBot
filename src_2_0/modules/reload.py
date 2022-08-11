@@ -1,10 +1,7 @@
-import asyncio
 from discord.ext import commands
 
 from logger import log_error, log_info, log_debug, log_warning
 from config import get_color, config
-
-from database import Database
 
 class ReloadCog(commands.Cog):
     def __init__(self, bot):

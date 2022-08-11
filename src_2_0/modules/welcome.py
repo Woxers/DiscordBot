@@ -1,10 +1,9 @@
-import asyncio
 from discord.ext import commands
 
 from logger import log_error, log_info, log_debug, log_warning
 from config import get_color, config
 
-from database import Database
+from .utils.database.players_db import PlayersDatabase
 
 class WelcomeCog(commands.Cog):
     __invites = None
@@ -69,9 +68,9 @@ class WelcomeCog(commands.Cog):
         log_info(f'Invite info: {inviteCode}  -  {inviter.name}')
 
         # Database check
-        if (Database.ckeck_user(member.id)):
+        if (PlayersDatabase.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
-            db_user = Database.get_user_by_id(member.id)
+            db_user = PlayersDatabase.get_user_by_id(member.id)
 
             # Newbie joined
             if (db_user['status'].lower() == 'joined'):
@@ -101,7 +100,7 @@ class WelcomeCog(commands.Cog):
                 await self.bot.send_json_embed(member, 'welcome/member_joined_spectator.txt')
             # Access joined
             elif (db_user['status'].lower() == 'access'):
-                Database.set_status_by_user_id(member.id, 'verified')
+                PlayersDatabase.set_status_by_user_id(member.id, 'verified')
                 # Add role Verified
                 role = self.bot.get_role_by_id(config['roles']['verified'])
                 await member.add_roles(role, reason='Auto-Role')
@@ -111,7 +110,7 @@ class WelcomeCog(commands.Cog):
                 await self.bot.send_json_embed(member, 'welcome/access_denied.txt')
             # Lost Access joined
             elif (db_user['status'].lower() == 'lost_access'):
-                Database.set_status_by_user_id(member.id, 'verified')
+                PlayersDatabase.set_status_by_user_id(member.id, 'verified')
                 # Add role Verified
                 role = self.bot.get_role_by_id(config['roles']['verified'])
                 await member.add_roles(role, reason='Auto-Role')
@@ -132,7 +131,7 @@ class WelcomeCog(commands.Cog):
         else:
             # Add to database
             log_debug(f'{member.mention} not exist in database')
-            if (not Database.add_user(member.id, inviter.id)):
+            if (not PlayersDatabase.add_user(member.id, inviter.id)):
                 log_error(f'Cannot add user {member.id} to database!')
             # Add role Candidate
             role = self.bot.get_role_by_id(config['roles']['candidate'])
@@ -149,8 +148,8 @@ class WelcomeCog(commands.Cog):
             dt = dict()
             dt['INVITER_MENTION'] = inviter.mention
             dt['INVITE_CODE'] = inviteCode
-            dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
-            dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
+            dt['INVITED_PLAYERS_COUNT'] = PlayersDatabase.get_invited_players_count_by_id(inviter.id)
+            dt['INVITED_COUNT'] = PlayersDatabase.get_invited_count_by_id(inviter.id)
             dt['STATUS'] = db_user['status'].upper()
             dt['MEMBER_MENTION'] = member.mention
             dt['MEMBER_NAME'] = member.name
@@ -175,9 +174,9 @@ class WelcomeCog(commands.Cog):
         log_info(f'User left: {member.mention}')
 
         # Database check
-        if (Database.ckeck_user(member.id)):
+        if (PlayersDatabase.ckeck_user(member.id)):
             log_debug(f'{member.mention} exist in database')
-            db_user = Database.get_user_by_id(member.id)
+            db_user = PlayersDatabase.get_user_by_id(member.id)
 
             # Newbie left
             if (db_user['status'].lower() == 'joined'):
@@ -190,7 +189,7 @@ class WelcomeCog(commands.Cog):
                 pass
             # Access left
             elif (db_user['status'].lower() == 'access'):
-                Database.set_status_by_user_id(member.id, 'lost_access')
+                PlayersDatabase.set_status_by_user_id(member.id, 'lost_access')
                 # TODO: Revoke access to mc server!
             elif (db_user['status'].lower() == 'lost_access'):
                 pass
@@ -211,8 +210,8 @@ class WelcomeCog(commands.Cog):
             dt = dict()
             dt['INVITER_MENTION'] = inviter.mention
             dt['INVITE_CODE'] = 'None'
-            dt['INVITED_PLAYERS_COUNT'] = Database.get_invited_players_count_by_id(inviter.id)
-            dt['INVITED_COUNT'] = Database.get_invited_count_by_id(inviter.id)
+            dt['INVITED_PLAYERS_COUNT'] = PlayersDatabase.get_invited_players_count_by_id(inviter.id)
+            dt['INVITED_COUNT'] = PlayersDatabase.get_invited_count_by_id(inviter.id)
             if (db_user['status'] == 'lost_access'):
                 dt['STATUS'] = 'ACCESS'
             else:

@@ -9,6 +9,29 @@ from config import get_color
 
 from logger import log_error
 
+def make_embed_fields_from_json_file(message_path: str, replace_dict: str = None):
+    '''
+        Convert JSON file to discord.EmbedProxy
+
+        Arguments
+        ---------
+            `message_path` - message path in `%PROJECT_FOLDER%/resources/messages`
+
+            `replace_dict` - replace in message `%%key%%` -> `dict['key']`
+
+        Return values
+        -------------
+
+            `Array of discord.EmbedProxy` - success
+
+            `None` - failed
+    '''
+    fields = []
+    embed = make_embed_from_json_file(message_path, replace_dict)
+    for field in embed.fields:
+        fields.append(field)
+    return fields
+
 def make_embed_from_json_file(message_path: str, replace_dict: str = None):
     '''
         Convert JSON File to discord.Embed

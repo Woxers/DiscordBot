@@ -74,9 +74,9 @@ class GalacticBot(commands.Bot):
             discord.message
         '''
         embed = make_embed_from_json_file(message_path, replace_dict)
-        for field in fields:
-            print(field[0])
-            embed.add_field(name = field[0].name, value = field[0].value, inline=field[0].inline)
+        if (fields != None):
+            for field in fields:
+                embed.add_field(name = field.name, value = field.value, inline=field.inline)
         if (message == None):
             return await channel.send(embed = embed, delete_after = delete_after, view = view)
         else:

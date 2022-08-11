@@ -6,7 +6,7 @@ from logger import log_error, log_info, log_debug
 from config import get_color, config
 from discord.ui import Button, View
 
-from database import Database
+from .utils.database.players_db import PlayersDatabase
 
 import ipinfo
 
@@ -151,8 +151,8 @@ class SecurityCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.last_bungee_event = Database.execute_query('SELECT get_last_bungee_event_id()')[0][0]
-        self.last_auth_event = Database.execute_query('SELECT get_last_auth_event_id()')[0][0]
+        self.last_bungee_event = PlayersDatabase.execute_query('SELECT get_last_bungee_event_id()')[0][0]
+        self.last_auth_event = PlayersDatabase.execute_query('SELECT get_last_auth_event_id()')[0][0]
         log_info("Security Module successfully loaded!")
 
     @commands.command(name='test-buttons')
@@ -174,13 +174,13 @@ class SecurityCog(commands.Cog):
 
     async def process_mc_events(self):
         # Get events from database
-        bungee_events = Database.execute_query(f'SELECT * FROM bungee_events WHERE id > {self.last_bungee_event} LIMIT {str(self.events_limit)}')
+        bungee_events = PlayersDatabase.execute_query(f'SELECT * FROM bungee_events WHERE id > {self.last_bungee_event} LIMIT {str(self.events_limit)}')
         if (len(bungee_events) > 0):
-            auth_events = Database.execute_query(f'SELECT * FROM auth_events WHERE id > {self.last_auth_event} and unix_timestamp < {bungee_events[-1][6]}')
+            auth_events = PlayersDatabase.execute_query(f'SELECT * FROM auth_events WHERE id > {self.last_auth_event} and unix_timestamp < {bungee_events[-1][6]}')
         else:
-            auth_events = Database.execute_query(f'SELECT * FROM auth_events WHERE id > {self.last_auth_event}')
+            auth_events = PlayersDatabase.execute_query(f'SELECT * FROM auth_events WHERE id > {self.last_auth_event}')
             if (len(auth_events) > 0):
-                bungee_events = Database.execute_query(f'SELECT * FROM bungee_events WHERE id > {self.last_bungee_event} and unix_timestamp < {auth_events[-1][4]}')
+                bungee_events = PlayersDatabase.execute_query(f'SELECT * FROM bungee_events WHERE id > {self.last_bungee_event} and unix_timestamp < {auth_events[-1][4]}')
 
         # Sort events by unix_timestamp
         events = []
@@ -202,7 +202,7 @@ class SecurityCog(commands.Cog):
         
         # Process events
         for event in events:
-            db_user = Database.get_user_by_nickname(event[3])
+            db_user = PlayersDatabase.get_user_by_nickname(event[3])
             if (db_user == None):
                 continue
             member = self.bot.guild.get_member(db_user['id'])
@@ -217,12 +217,12 @@ class SecurityCog(commands.Cog):
             if len(event) > 5:
             # Handle Bungee Event
                 if (event[2] == 'PlayerConnectEvent'):
-                    if (not Database.execute_query(f'select player_id from session_logs where id = {event[1]}')[0][0] == None):
+                    if (not PlayersDatabase.execute_query(f'select player_id from session_logs where id = {event[1]}')[0][0] == None):
                         auth_message = AuthMessage(self.bot)
                         auth_message.color = get_color('neutral')
                         auth_message.channel = channel
                         auth_message.set_ip(event[5])
-                        auth_message.nickname = Database.execute_query(f'select realname from authme where username = "{event[3]}"')[0][0]
+                        auth_message.nickname = PlayersDatabase.execute_query(f'select realname from authme where username = "{event[3]}"')[0][0]
                         auth_message.add_event_log('', 1, 'Присоединился к серверу!', event[6])
                         await auth_message.send_auth_message()
                         await auth_message.send_quick_auth_message()
