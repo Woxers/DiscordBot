@@ -1,20 +1,21 @@
+from asyncio import sleep
 import time
 import pymysql
 
 import hashlib
 import secrets
 
-from config import get_color, config
-from logger import log_info, log_error, log_critical, log_warning, log_debug
+from config import config
+from logger import log_debug, log_info, log_error, log_critical, log_warning
 
 # Singleton
-class Database:
+class PlayersDatabase:
     __instance = None
     __connection = None
 
     def __new__(cls):
         if cls.__instance is None:
-            cls.__instance = super(Database, cls).__new__(cls)
+            cls.__instance = super(PlayersDatabase, cls).__new__(cls)
             cls.__connection = cls.create_connection()
             return cls.__instance
 
@@ -28,7 +29,7 @@ class Database:
     def create_connection(cls):
         try:
             connection = None
-            connection = pymysql.connect(host=config['database']['host'], user=config['database']['user'], passwd=config['database']['passwd'], db=config['database']['db_name'])
+            connection = pymysql.connect(host=config['players_database']['host'], user=config['players_database']['user'], passwd=config['players_database']['passwd'], db=config['players_database']['db_name'])
             connection.set_charset('utf8')
             log_info('Connection to MySQL database')
         except pymysql.Error as e:
@@ -39,16 +40,29 @@ class Database:
     # Execute SQL query
     @classmethod
     def execute_query(cls, query):
-        if (cls.__connection.open == False):
+        if (not cls.test_query()):
+            sleep(2)
             cls.reload_connection()
-        cursor = cls.__connection.cursor()
         try:
+            cursor = cls.__connection.cursor()
             cursor.execute(query)
             cls.__connection.commit()
             return cursor.fetchall()
-        except pymysql.Error as err_string:
-            log_error(f'Exception in execute_query occured, {err_string}')
-            return -1
+        except pymysql.Error as e:
+            log_error(f'Exception in execute_query occured, {e}')
+            raise(e)
+
+    # Test query
+    @classmethod
+    def test_query(cls):
+        try:
+            cursor = cls.__connection.cursor()
+            cursor.execute('select * from discord limit 1')
+            cls.__connection.commit()
+            return 1
+        except Exception as e:
+            log_debug(f'Exception in test_query occured {e}')
+            return 0
 
     @classmethod
     def authme_check_nickname(cls, nickname: str):
@@ -62,21 +76,14 @@ class Database:
             `0` - not Exist
         '''
         result = cls.execute_query(f'SELECT CheckNickname("{nickname}")')
-        if (result == -1):
-            return 1
-        else:
-            return result[0][0]
+        if (not result):
+            raise(Exception('Exception in authme_check_nickname, there is no query result'))
+        return result[0][0]
 
     @classmethod
-    def authme_register_player(cls, user_id: int, nickname: str, password: str):
+    def register_player(cls, user_id: int, nickname: str, password: str):
         '''
         Register player on minecraft server
-
-        Return values: 
-        -------------
-            `1` - registered
-
-            `0` - failed
         '''
         if (cls.authme_check_nickname(nickname)):
             return 0
@@ -88,30 +95,18 @@ class Database:
         password = f'$SHA${salt}${hash}'
         # adding to database
         timestamp = int(time.time() * 1000)
-        result = cls.execute_query(f'CALL RegisterPlayer({user_id}, "{nickname}", "{password}", "{timestamp}")')
-        if (result == -1):
-            return 0
-        else:
-            return 1
+        cls.execute_query(f'CALL RegisterPlayer({user_id}, "{nickname}", "{password}", "{timestamp}")')
+        return 1
 
     @classmethod
     def add_user(cls, user_id: int, inviter_id: int, status: str = None):
         '''
         Add new user to database
-
-        Return values: 
-        -------------
-            `1` - added
-
-            `0` - failed
         '''
         if (status == None):
             status = 'joined'
-        result = cls.execute_query(f'CALL AddUser({user_id}, {inviter_id}, "{status}")')
-        if (result == -1):
-            return 0
-        else:
-            return 1
+        cls.execute_query(f'CALL AddUser({user_id}, {inviter_id}, "{status}")')
+        return 1
     
     @classmethod
     def ckeck_user(cls, user_id: int):
@@ -125,10 +120,9 @@ class Database:
             `0` - not Exist
         '''
         result = cls.execute_query(f'SELECT CheckUser({user_id})')
-        if (result == -1):
-            return 1
-        else:
-            return result[0][0]
+        if (not result):
+            raise(Exception('Exception in ckeck_user, there is no query result'))
+        return result[0][0]
 
     @classmethod
     def get_user_by_id(cls, user_id: int):
@@ -137,23 +131,16 @@ class Database:
 
         Return values: 
         -------------
-            Success:
-
                 dict: `{'id', 'inviter_id', 'status'}`
-
-            User not exist:
-
-                `None`
         '''
         result = cls.execute_query(f'SELECT * FROM discord WHERE id = {user_id}')
-        if (result == -1):
-            return None
-        else:
-            user = dict()
-            user['id'] = result[0][0]
-            user['inviter_id'] = result[0][1]
-            user['status'] = result[0][2]
-            return user
+        if (not result):
+            raise(Exception('Exception in get_user_by_id, there is no query result'))
+        user = dict()
+        user['id'] = result[0][0]
+        user['inviter_id'] = result[0][1]
+        user['status'] = result[0][2]
+        return user
 
     @classmethod
     def get_invited_count_by_id(cls, user_id: int):
@@ -162,19 +149,12 @@ class Database:
 
         Return values: 
         -------------
-            Success:
-
                 'int'
-
-            User not exist:
-
-                `None`
         '''
         result = cls.execute_query(f'SELECT GetInvitedByUserCount({user_id})')
-        if (result == -1):
-            return None
-        else:
-            return result[0][0]
+        if (not result):
+            raise(Exception('Exception in get_invited_count_by_id, there is no query result'))
+        return result[0][0]
 
     @classmethod
     def get_invited_players_count_by_id(cls, user_id: int):
@@ -183,22 +163,12 @@ class Database:
 
         Return values: 
         -------------
-            Success:
-
                 'int'
-
-            User not exist:
-
-                `None`
         '''
         result = cls.execute_query(f'SELECT GetInvitedPlayersCountByUser({user_id})')
-        if (result == -1):
-            return None
-        else:
-            return result[0][0]
-
-    
-
+        if (not result):
+            raise(Exception('Exception in get_invited_players_count_by_id, there is no query result'))
+        return result[0][0]
 
     @classmethod
     def get_user_by_nickname(cls, nickname: str):
@@ -207,23 +177,16 @@ class Database:
 
         Return values: 
         -------------
-            Success:
-
                 dict: `{'id', 'inviter_id', 'status'}`
-
-            User not exist:
-
-                `None`
         '''
         result = cls.execute_query(f'CALL GetUserByNickname("{nickname}")')
-        if (result == -1):
-            return None
-        else:
-            user = dict()
-            user['id'] = result[0][0]
-            user['inviter_id'] = result[0][1]
-            user['status'] = result[0][2]
-            return user
+        if (not result):
+            raise(Exception('Exception in get_user_by_nickname, there is no query result'))
+        user = dict()
+        user['id'] = result[0][0]
+        user['inviter_id'] = result[0][1]
+        user['status'] = result[0][2]
+        return user
 
     @classmethod
     def get_players_by_id(cls, user_id: int):
@@ -232,50 +195,28 @@ class Database:
 
         Return values: 
         -------------
-            Success:
-
-                dict: `{'username': {'realname', 'ip', 'lastlogin', 'regdate', 'isLogged'}}`
-
-            User not exist:
-
-                `None`
+                dict: `{'username': {'id', 'realname', 'ip', 'lastlogin', 'regdate', 'isLogged', 'has_access'}}`
         '''
         result = cls.execute_query(f'CALL GetPlayersByUserID({user_id})')
-        if (result == -1):
-            return None
-        else:
-            players = dict()
-            for player_info in result:
-                players[player_info[0]] = {'realname': player_info[1], 'ip': player_info[2], 'lastlogin': player_info[3], 'regdate': player_info[4], 'isLogged': player_info[5]}
-            return players
+        if (not result):
+            raise(Exception('Exception in get_players_by_id, there is no query result'))
+        players = dict()
+        for player_info in result:
+            players[player_info[0]] = {'id': player_info[7], 'realname': player_info[1], 'ip': player_info[2], 'lastlogin': player_info[3], 'regdate': player_info[4], 'isLogged': player_info[5], 'has_access': player_info[6]}
+        return players
 
     @classmethod
     def set_status_by_user_id(cls, user_id: int, status: str):
         '''
         Set player's status
-
-        Return values: 
-        -------------
-            `1` - success
-
-            `0` - failed
         '''
-        result = cls.execute_query(f'UPDATE discord SET status = "{status}" WHERE id = {user_id}')
-        if (result == -1):
-            return 0
-        else:
-            return 1
+        cls.execute_query(f'UPDATE discord SET status = "{status}" WHERE id = {user_id}')
+        return 1
 
     @classmethod
     def set_new_player_password(cls, nickname: str, password: str):
         '''
         Update player password
-
-        Return values: 
-        -------------
-            `1` - success
-
-            `0` - failed
         '''
         if (not cls.authme_check_nickname(nickname)):
             return 0
@@ -286,10 +227,31 @@ class Database:
         hash = hashlib.sha256(hash.encode('utf-8')).hexdigest()
         password = f'$SHA${salt}${hash}'
         # Update value in database
-        result = cls.execute_query(f'UPDATE authme SET password = "{password}" WHERE username = "{nickname}" LIMIT 1')
-        if (result == -1):
-            return 0
-        else:
-            return 1
+        cls.execute_query(f'UPDATE authme SET password = "{password}" WHERE username = "{nickname}" LIMIT 1')
+        return 1
 
-db = Database()
+    @classmethod
+    def get_player_settings(cls, nickname: str):
+        '''
+        Get player settings
+
+        Return values: 
+        -------------
+                dict: `{'authme_id', 'quick_auth', 'join_notify'}`
+        '''
+        result = cls.execute_query(f'select * from player_settings where authme_id = (select id from authme where username = "{nickname}")')
+        if (not result):
+            log_warning(f'Creating new settings for user "{nickname}"')
+            cls.execute_query(f'insert into player_settings (authme_id) VALUES ((select id from authme where username = "{nickname}"))')
+        result = cls.execute_query(f'select * from player_settings where authme_id = (select id from authme where username = "{nickname}")')
+        if (not result):
+            raise(Exception('Exception in get_players_by_id, there is no query result'))
+        if (result == -1):
+            return None
+        dt = {}
+        dt['authme_id'] = result[0][0]
+        dt['quick_auth'] = result[0][1]
+        dt['join_notify'] = result[0][2]
+        return dt
+
+db = PlayersDatabase()
