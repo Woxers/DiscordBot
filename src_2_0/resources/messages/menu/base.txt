@@ -1,9 +1,0 @@
-NEUTRAL_COLOR
-{
-    "title": "Меню пользователя",
-    "description": "Статус верификации: `JOINED`\nДоступ к серверу: `есть`",
-    "color": 16777201,
-    "thumbnail": {
-        "url": "https://media.discordapp.net/attachments/866681575639220255/866681685122088960/8a4e75760b40f744.png"
-    }
-}
