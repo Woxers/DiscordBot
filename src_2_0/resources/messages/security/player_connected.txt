@@ -1,0 +1,23 @@
+NICKNAME, IP, LOCATION, AUTH_STATUS, LOGS, CLOSED_STATUS, COLOR
+{
+    "title": "Игровая сессия %%NICKNAME%%",
+    "description": "%%LOGS%%",
+    "color": %%COLOR%%,
+    "fields": [
+    {
+        "name": "Информация о подключении",
+        "value": "IP Адрес: `%%IP%%`\nМестоположение: `%%LOCATION%%`",
+        "inline": true
+    },
+    {
+        "name": "Статус сессии",
+        "value": "Игрок авторизован: `%%AUTH_STATUS%%`\nСессия завершена: `%%CLOSED_STATUS%%`",
+        "inline": true
+    }
+    ],
+    "footer": {
+        "icon_url": "https://media.discordapp.net/attachments/866681575639220255/866681810989613076/gs_logo_1024.webp?width=702&height=702",
+        "text": "GS#Private - Vanilla MC \u200b"
+    },
+    "timestamp": "%%TIMESTAMP%%"
+}

@@ -2,7 +2,7 @@ import os
 
 import discord
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from config import get_color, config
 from logger import log_info, log_error, log_warning
@@ -18,6 +18,7 @@ class GalacticBot(commands.Bot):
 
     async def on_ready(self): 
         self.guild = self.get_current_guild()
+        #self.mc_events_loop.start()
         log_info('Bot connected successfully!')
     
     def get_current_guild(self):
@@ -44,14 +45,21 @@ class GalacticBot(commands.Bot):
     # Connectins extensions
     async def setup_cogs(self):
         '''Setup all modules'''
-        path = os.path.dirname(__file__) + '/modules'
+        # path = os.path.dirname(__file__) + '/modules'
+        path = '/home/testuser/GalacticManager/src_2_0/modules'
         for filename in os.listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')
                 log_info(f'{filename[:-3].title()} module has been loaded')
         log_info('All modules has been successfully loaded!')
+    
+    # MC process events loop
+    @tasks.loop(seconds = 1)
+    async def mc_events_loop(self):
+        cog = self.get_cog('SecurityCog')
+        await cog.process_mc_events()
 
-    async def send_json_embed(self, channel: discord.channel, message_path: str, replace_dict: dict = None, delete_after: int = None):
+    async def send_json_embed(self, channel: discord.channel = None, message_path: str = None, replace_dict: dict = None, delete_after: int = None, message: discord.message = None, fields = None, view = None):
         '''
         Send Embeded Message from JSON (dict) to discord.channel
         
@@ -66,9 +74,15 @@ class GalacticBot(commands.Bot):
             discord.message
         '''
         embed = make_embed_from_json_file(message_path, replace_dict)
-        return await channel.send(embed = embed, delete_after = delete_after)
+        for field in fields:
+            print(field[0])
+            embed.add_field(name = field[0].name, value = field[0].value, inline=field[0].inline)
+        if (message == None):
+            return await channel.send(embed = embed, delete_after = delete_after, view = view)
+        else:
+            return await message.edit(embed = embed, delete_after = delete_after, view = view)
 
-    async def send_simple_embed(self, channel: discord.channel, title: str = None, description: str = None, color: str = None, delete_after: int = None):
+    async def send_simple_embed(self, channel: discord.channel, title: str = None, description: str = None, color: str = None, delete_after: int = None, view = None):
         '''
         Send Embeded Message to discord.channel
         
@@ -88,7 +102,7 @@ class GalacticBot(commands.Bot):
         if (color != None):
             embed.color = get_color(color)
         a = embed.to_dict()
-        return await channel.send(embed = embed, delete_after = delete_after)
+        return await channel.send(embed = embed, delete_after = delete_after, view = view)
         
 galactic_bot = GalacticBot()
 galactic_bot.run(config['bot']['token'])
