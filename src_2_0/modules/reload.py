@@ -7,14 +7,11 @@ from config import get_color, config
 from database import Database
 
 class ReloadCog(commands.Cog):
-    __invites = None
-
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.__invites = await self.bot.guild.invites()
         log_info("Reload Module successfully loaded!")
 
     @commands.command()
@@ -29,6 +26,17 @@ class ReloadCog(commands.Cog):
             await self.bot.load_extension(extension)
         log_warning('All extensions are reloaded!')
         await self.bot.send_simple_embed(ctx.channel, title='Команда выполнена', description='Все модули были перезагружены!', color='success')
+
+    @commands.command()
+    @commands.has_permissions(administrator = True)
+    async def ping(self, ctx):
+        await self.bot.send_simple_embed(ctx.channel, title='Ping', description=f'pong in {round(self.bot.latency * 1000)} ms!', color='success', delete_after= 5)
+
+    @ping.error
+    async def ping_error(self, ctx, error):
+        if (str(ctx.channel).startswith("Direct Message with")):
+            return
+        await self.bot.send_simple_embed(ctx.channel, title='Error', description=f'{error}', color='error', delete_after= 5)
 
 async def setup(bot):
     await bot.add_cog(ReloadCog(bot))
