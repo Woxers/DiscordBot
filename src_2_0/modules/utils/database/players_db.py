@@ -241,10 +241,6 @@ class PlayersDatabase:
         '''
         result = cls.execute_query(f'select * from player_settings where authme_id = (select id from authme where username = "{nickname}")')
         if (not result):
-            log_warning(f'Creating new settings for user "{nickname}"')
-            cls.execute_query(f'insert into player_settings (authme_id) VALUES ((select id from authme where username = "{nickname}"))')
-        result = cls.execute_query(f'select * from player_settings where authme_id = (select id from authme where username = "{nickname}")')
-        if (not result):
             raise(Exception('Exception in get_players_by_id, there is no query result'))
         if (result == -1):
             return None

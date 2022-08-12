@@ -1,23 +1,29 @@
-
 from datetime import datetime
 import discord
 
-from discord.ui import View
-
 from config import get_color
+
+from .elements.accounts_button import AccountsButton
+from .elements.close_button import CloseButton
+from .elements.return_button import ReturnButton
 
 class MainPage():
     def __init__(self, menu_message):
         self.menu_message = menu_message        # MenuMessage
         self.embed = None                       # Embeded part
-        self.view = None                        # View, Interactive part
+        self.view_items = []                    # Buttons, Selection and other
 
     @classmethod
     async def create(cls, menu_message):
         self = MainPage(menu_message)
         await self.create_embed()
-        self.view = View()
+        await self.create_view()
         return self
+
+    async def create_view(self):
+        self.view_items.append(ReturnButton(self.menu_message))
+        self.view_items.append(AccountsButton(self.menu_message))
+        self.view_items.append(CloseButton(self.menu_message))
 
     async def create_embed(self):
         embed = discord.Embed()
@@ -28,7 +34,7 @@ class MainPage():
         access = 'есть' if self.menu_message.info["status"] == 'access' else 'нет'
         inviter_id = self.menu_message.info['inviter_id']
         joined = self.menu_message.user.joined_at.strftime('%Y-%m-%d %H:%M')
-        embed.description = f'Статус верификации: `{status}`\nДоступ к серверу: `{access}`\n\nПрисоединился: `{joined}`\nПригласивший: <@{inviter_id}>'
+        embed.description = f'Статус верификации: `{status}`\nДоступ к серверу: `{access}`\n\nПригласивший: <@{inviter_id}>\nПрисоединился: `{joined}`'
         # Color
         embed.color = get_color('neutral')
         # Picture
@@ -50,8 +56,10 @@ class MainPage():
             embed.add_field(name=players[nickname]['realname'], inline=1, value=f'Активен: `{active}`\nРоль: `{role_name}`\nНаиграно: `IN_DEV`\nЗарегистрирован: `{date}`')
         self.embed = embed
 
+    # Get discord.Embed
     def get_embed(self):
         return self.embed
     
-    def get_view(self):
-        return self.view
+    # Get discord.ui.View
+    def get_view_items(self):
+        return self.view_items

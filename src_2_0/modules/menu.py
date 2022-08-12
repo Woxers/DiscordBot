@@ -12,6 +12,8 @@ class MenuCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        self.menu_messages = {}
+
     @commands.Cog.listener()
     async def on_ready(self):
         log_info("Menu Module successfully loaded!")
@@ -19,19 +21,17 @@ class MenuCog(commands.Cog):
     @commands.command(name='menu')
     @commands.is_owner() 
     async def menu_command(self, ctx, *args):
-        menu_message = MenuMessage(self.bot, ctx.author, ctx.channel)
         try:
+            # Close opened user's menu if exist
+            if str(ctx.author.id) in self.menu_messages.keys():
+                await self.menu_messages[str(ctx.author.id)].close('another menu openned')
+            # Open new menu
+            menu_message = MenuMessage(self.bot, ctx.author, ctx.channel)
+            self.menu_messages[str(ctx.author.id)] = menu_message
             await menu_message.setup_menu_message()
         except Exception as e:
             log_error(e)
             raise(e)
-        # try:
-        #     menuMessage = MenuMessage(self.bot)
-        #     menuMessage.channel = ctx.channel
-        #     menuMessage.user = ctx.author
-        #     await menuMessage.build_message('base')
-        # except Exception as e:
-        #     print(e)
     
     @menu_command.error
     async def menu_command_error(self, ctx, error):
