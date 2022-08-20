@@ -141,6 +141,19 @@ class PlayersDatabase:
         user['inviter_id'] = result[0][1]
         user['status'] = result[0][2]
         return user
+    
+    @classmethod
+    def get_raw_player_by_id(cls, authme_id: int):
+        '''
+            Get player by id\n
+            Return values: 
+            -------------
+                array: `['id', 'username', 'realname', 'ip', 'lastlogin', 'regdate', 'isLogged', 'has_access']`
+        '''
+        result = cls.execute_query(f'SELECT id, username, realname, ip, lastlogin, regdate, isLogged, has_access from authme where id = {authme_id}')
+        if (not result):
+            raise(Exception('Exception in get_user_by_id, there is no query result'))
+        return result[0]
 
     @classmethod
     def get_invited_count_by_id(cls, user_id: int):
@@ -241,7 +254,7 @@ class PlayersDatabase:
         '''
         result = cls.execute_query(f'select * from player_settings where authme_id = (select id from authme where username = "{nickname}")')
         if (not result):
-            raise(Exception('Exception in get_players_by_id, there is no query result'))
+            raise(Exception('Exception in get_player_settings, there is no query result'))
         if (result == -1):
             return None
         dt = {}
