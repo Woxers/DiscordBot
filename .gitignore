@@ -2,6 +2,9 @@
 *build-*
 __pycache__
 src_online_bot
+doctest-output
+heads
+skins
 
 # Файлы
 *.log
@@ -10,3 +13,6 @@ src_online_bot
 settings.json
 test.py
 menu_user.json
+graph.png
+test_graphviz.py
+

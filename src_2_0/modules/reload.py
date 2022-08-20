@@ -25,7 +25,7 @@ class ReloadCog(commands.Cog):
         await self.bot.send_simple_embed(ctx.channel, title='Команда выполнена', description='Все модули были перезагружены!', color='success')
 
     @commands.command()
-    @commands.has_permissions(administrator = True)
+    @commands.is_owner()
     async def ping(self, ctx):
         await self.bot.send_simple_embed(ctx.channel, title='Ping', description=f'pong in {round(self.bot.latency * 1000)} ms!', color='success', delete_after= 5)
 
