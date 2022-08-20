@@ -1,40 +1,47 @@
-from datetime import datetime
 import discord
 
+from ..user import GalacticUser, Player
+from ..paginator.page import Page
+from ..elements.custom_button import CustomButton
+
+from .account_selector_page import AccountSelectionPage
+
 from config import get_color
+from logger import log_debug
 
-from .elements.accounts_button import AccountsButton
-from .elements.close_button import CloseButton
-from .elements.return_button import ReturnButton
 
-class MainPage():
+class MainPage(Page):
     def __init__(self, menu_message):
-        self.menu_message = menu_message        # MenuMessage
-        self.embed = None                       # Embeded part
-        self.view_items = []                    # Buttons, Selection and other
+        self.menu_message = menu_message
+        super().__init__()
 
     @classmethod
     async def create(cls, menu_message):
         self = MainPage(menu_message)
-        await self.create_embed()
-        await self.create_view()
+        self.create_embed()
+        self.create_view_items()
         return self
 
-    async def create_view(self):
-        self.view_items.append(ReturnButton(self.menu_message))
-        self.view_items.append(AccountsButton(self.menu_message))
-        self.view_items.append(CloseButton(self.menu_message))
-
-    async def create_embed(self):
+    def create_view_items(self):
+        # Creating accounts button
+        accounts_button = CustomButton(discord.ButtonStyle.green, 'Аккаунты')
+        accounts_button.set_callback(self.accounts_button_callback)
+        # Append item list
+        self.view_items.append(self.menu_message.get_return_button())
+        self.view_items.append(accounts_button)
+        self.view_items.append(self.menu_message.get_close_button())
+    
+    def create_embed(self):
         embed = discord.Embed()
+        galactic_user: GalacticUser = self.menu_message.galactic_user
         # Title
         embed.title = 'Меню пользователя'
         # Description
-        status = self.menu_message.info['status'].upper()
-        access = 'есть' if self.menu_message.info["status"] == 'access' else 'нет'
-        inviter_id = self.menu_message.info['inviter_id']
-        joined = self.menu_message.user.joined_at.strftime('%Y-%m-%d %H:%M')
-        embed.description = f'Статус верификации: `{status}`\nДоступ к серверу: `{access}`\n\nПригласивший: <@{inviter_id}>\nПрисоединился: `{joined}`'
+        status = f"{galactic_user.status.value['name']} {galactic_user.status.value['emoji']}" 
+        status_description = galactic_user.status.value['description']
+        inviter_id = galactic_user.inviter_id
+        joined = galactic_user.user.joined_at.strftime('%Y-%m-%d %H:%M')
+        embed.description = f'Статус верификации: `{status}`\nОписание: `{status_description}`\n\nПригласивший: <@{inviter_id}>\nПрисоединился: `{joined}`'
         # Color
         embed.color = get_color('neutral')
         # Picture
@@ -43,23 +50,14 @@ class MainPage():
         else:
             embed.set_thumbnail(url=self.menu_message.user.avatar.url)
         # Fields
-        players = self.menu_message.info['players']
-        for nickname in players:
-            active = 'да' if self.menu_message.info["status"] == 'access' and players[nickname]['has_access'] == 1 else 'нет'
-            role_name = 'Игрок'
-            for permission in players[nickname]['permissions']:
-                if (permission['name'] == 'group.admin'):
-                    role_name = 'Администратор'
-                if (permission['name'] == 'group.stuff'):
-                    role_name = 'Модератор'
-            date = datetime.utcfromtimestamp(int(players[nickname]['regdate']) / 1000).strftime('%Y-%m-%d')
-            embed.add_field(name=players[nickname]['realname'], inline=1, value=f'Активен: `{active}`\nРоль: `{role_name}`\nНаиграно: `IN_DEV`\nЗарегистрирован: `{date}`')
+        players: list[Player] = galactic_user.players
+        for player in players:
+            active = 'да' if galactic_user.status.name == 'access' and player.has_access == 1 else 'нет'
+            role_name = f"{player.groups[0].value['name']} {player.groups[0].value['emoji']}"
+            date = player.reg_date.strftime('%Y-%m-%d')
+            embed.add_field(name=player.realname, inline=1, value=f'Активен: `{active}`\nРоль: `{role_name}`\nНаиграно: `IN_DEV`\nЗарегистрирован: `{date}`')
         self.embed = embed
-
-    # Get discord.Embed
-    def get_embed(self):
-        return self.embed
     
-    # Get discord.ui.View
-    def get_view_items(self):
-        return self.view_items
+    async def accounts_button_callback(self):
+        await self.menu_message.switch_page(await AccountSelectionPage.create(self.menu_message))
+        log_debug('accounts button callback')
