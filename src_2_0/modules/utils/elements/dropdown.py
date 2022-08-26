@@ -11,10 +11,14 @@ class Dropdown(Select):
         '''
         self.menu_message = menu_message
         self.callback_function = None
+        self.clicked = 0
         dropdown_options = []
 
         for option in options:
-            dropdown_options.append(discord.SelectOption(label=option['label'], description=option['description'], emoji=option['emoji']))
+            if 'default' in option:
+                dropdown_options.append(discord.SelectOption(label=option['label'], description=option['description'], emoji=option['emoji'], default=True))
+            else:
+                dropdown_options.append(discord.SelectOption(label=option['label'], description=option['description'], emoji=option['emoji']))
 
         super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=dropdown_options)
 
@@ -26,5 +30,10 @@ class Dropdown(Select):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        if (self.callback_function != None):
-            await self.callback_function(self.values[0])
+        if (not self.disabled):
+            self.disabled = 1
+            if (self.callback_function != None):
+                await self.callback_function(self.values[0])
+
+    def reset(self):
+        self.disabled = 0

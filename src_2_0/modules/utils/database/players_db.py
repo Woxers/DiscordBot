@@ -261,6 +261,13 @@ class PlayersDatabase:
         dt['authme_id'] = result[0][0]
         dt['quick_auth'] = result[0][1]
         dt['join_notify'] = result[0][2]
+        dt['tab_type'] = result[0][3]
         return dt
+    
+    @classmethod
+    def set_settings_value(cls, authme_id, key, value):
+        if (type(value) == str):
+            value = f"'{value}'"
+        cls.execute_query(f"UPDATE player_settings SET {key} = {value} WHERE authme_id = {authme_id} LIMIT 1")
 
 db = PlayersDatabase()
