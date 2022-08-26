@@ -4,6 +4,7 @@ from datetime import datetime
 
 from logger import log_warning
 
+from .enums.mc_settings import McSettings
 from .enums.mc_groups import McGroups
 from .enums.statuses import Statuses
 
@@ -43,7 +44,8 @@ class Player():
         self.has_access: bool = None        # Player has access
 
         self.groups: list[McGroups] = []    # McGroups list
-        self.settings = dict()              # Player's settings
+
+        self.settings = []                  # Player's settings
 
         self.head = None                    # Players head
 
@@ -90,9 +92,10 @@ class Player():
         '''
             Get player settings
         '''
-        settings = PlayersDatabase.get_player_settings(self.username)
-        self.settings['quick_auth_enabled'] = settings['quick_auth']
-        self.settings['join_notify_enabled'] = settings['join_notify']
+        self.settings = PlayersDatabase.get_player_settings(self.username)
+
+    def set_settings_value(self, key, value):
+        PlayersDatabase.set_settings_value(self.id, key, value)
 
     @classmethod
     def compare(cls, item1, item2):

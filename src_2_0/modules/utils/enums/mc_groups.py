@@ -12,27 +12,29 @@ class McGroups(Enum):
         `disabled` Игрок (Отключен) ⬜
     '''
     # Basic groups
-    admin = {'name': 'Администратор', 'emoji': '🟥', 'weight': 100, 'primary': 1}
-    stuff = {'name': 'Модератор', 'emoji': '🟦', 'weight': 50, 'primary': 1}
-    default = {'name': 'Игрок', 'emoji': '🟩', 'weight': 10, 'primary': 1}
-    disabled = {'name': 'Игрок (Отключен)', 'emoji': '⬜', 'weight': 5, 'primary': 1}
+    role_admin = {'name': 'Администратор', 'emoji': '🟥', 'weight': 9999, 'primary': 1}
+    role_moder = {'name': 'Модератор', 'emoji': '🟦', 'weight': 5555, 'primary': 1}
+    role_helper = {'name': 'Хелпер', 'emoji': '🟩', 'weight': 3333, 'primary': 1}
+    role_builder = {'name': 'Строитель', 'emoji': '🟩', 'weight': 2222, 'primary': 1}
+    default = {'name': 'Игрок', 'emoji': '🟩', 'weight': 1000, 'primary': 1}
+    disabled = {'name': 'Игрок (Отключен)', 'emoji': '⬜', 'weight': 500, 'primary': 1}
 
     # Authme groups
-    notlogged = {'name': 'Не авторизирован (Онлайн)', 'emoji': '🟧', 'weight': 1000, 'primary': 1}
-    notregistered = {'name': 'Не зарегистрирован (Онлайн)', 'emoji': '🟧', 'weight': 1000, 'primary': 1}
+    notlogged = {'name': 'Не авторизирован (Онлайн)', 'emoji': '🟧', 'weight': 10000, 'primary': 1}
+    notregistered = {'name': 'Не зарегистрирован (Онлайн)', 'emoji': '🟧', 'weight': 10000, 'primary': 1}
 
     # Badges group
         # Staff
-    knife = {'name': 'Кинжал', 'emoji': '🗡️', 'weight': 9, 'primary': 0}
-    axe = {'name': 'Топор', 'emoji': '🪓', 'weight': 8, 'primary': 0}
+    icon_knife = {'name': 'Кинжал', 'emoji': '🗡️', 'weight': 50, 'primary': 0}
+    icon_axe = {'name': 'Топор', 'emoji': '🪓', 'weight': 49, 'primary': 0}
         # Credits
-    star = {'name': 'Звезда', 'emoji': '⭐', 'weight': 7, 'primary': 0}
-    fire = {'name': 'Огонь', 'emoji': '🔥', 'weight': 6, 'primary': 0}
+    icon_star = {'name': 'Звезда', 'emoji': '⭐', 'weight': 4, 'primary': 0}
+    icon_fire = {'name': 'Огонь', 'emoji': '🔥', 'weight': 3, 'primary': 0}
         # Default
-    fork = {'name': 'Трезубец', 'emoji': '🔱', 'weight': 5, 'primary': 0}
-    pickaxe = {'name': 'Кирка', 'emoji': '⛏️', 'weight': 4, 'primary': 0}
-    potion = {'name': 'Зелье', 'emoji': '⚗️', 'weight': 3, 'primary': 0}
-    skull = {'name': 'Череп', 'emoji': '💀', 'weight': 2, 'primary': 0}
+    icon_trident = {'name': 'Трезубец', 'emoji': '🔱', 'weight': 2, 'primary': 0}
+    icon_pickaxe = {'name': 'Кирка', 'emoji': '⛏️', 'weight': 2, 'primary': 0}
+    icon_potion = {'name': 'Зелье', 'emoji': '⚗️', 'weight': 2, 'primary': 0}
+    icon_skull = {'name': 'Череп', 'emoji': '💀', 'weight': 2, 'primary': 0}
 
     @classmethod
     def static_init(cls):
