@@ -15,6 +15,7 @@ class ReloadCog(commands.Cog):
     @commands.is_owner() 
     async def reload(self, ctx, *args):
         extensions = list()
+        await self.bot.get_cog('MenuCog').close_all_menu()
         for extension in self.bot.extensions:
             if not (extension == 'modules.reload'): 
                 extensions.append(extension)
