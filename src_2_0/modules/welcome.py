@@ -226,7 +226,7 @@ class WelcomeCog(commands.Cog):
             log_error(f'Error while sending Left-Log message: {e}')
         
     @commands.command(name='test')
-    @commands.has_permissions(administrator = True)
+    @commands.is_owner() 
     async def test(self, ctx, arg = None):
         dt = dict()
         dt['USER_NAME'] = 'Aptem'

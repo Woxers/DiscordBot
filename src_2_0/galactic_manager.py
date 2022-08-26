@@ -1,14 +1,16 @@
+import asyncio
 import os
-
 import discord
 
 from discord.ext import commands, tasks
+from discord import app_commands
 
 from config import get_color, config
 from logger import log_info, log_error, log_warning
 from message_formatter import make_embed_from_json_file
 
 class GalacticBot(commands.Bot):
+    guild_object = discord.Object(id=config['guild']['id'])
     guild = None
 
     def __init__(self):
@@ -18,9 +20,19 @@ class GalacticBot(commands.Bot):
 
     async def on_ready(self): 
         self.guild = self.get_current_guild()
-        #self.mc_events_loop.start()
         log_info('Bot connected successfully!')
+        await self.update_activity_loop.start()
+        self.tree.copy_global_to(guild=self.guild_object)
+        self.tree.add_command()
+        await self.tree.sync(guild=self.guild_object)
     
+    @tasks.loop(seconds=60)
+    async def update_activity_loop(self):
+        messages_part = ['Just', 'Just type', 'Just type ?menu']
+        for messege in messages_part:
+            await asyncio.sleep(3)
+            await self.change_presence(activity=discord.Game(name=messege))
+
     def get_current_guild(self):
         return self.get_guild(config['guild']['id'])
 
@@ -103,6 +115,6 @@ class GalacticBot(commands.Bot):
             embed.color = get_color(color)
         a = embed.to_dict()
         return await channel.send(embed = embed, delete_after = delete_after, view = view)
-        
+
 galactic_bot = GalacticBot()
 galactic_bot.run(config['bot']['token'])
