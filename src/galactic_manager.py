@@ -28,7 +28,7 @@ class GalacticBot(commands.Bot):
     
     @tasks.loop(seconds=60)
     async def update_activity_loop(self):
-        messages_part = ['Just', 'Just type', 'Just type ?menu']
+        messages_part = ['just', 'just type', 'just type ?menu']
         for messege in messages_part:
             await asyncio.sleep(3)
             await self.change_presence(activity=discord.Game(name=messege))
@@ -57,8 +57,8 @@ class GalacticBot(commands.Bot):
     # Connectins extensions
     async def setup_cogs(self):
         '''Setup all modules'''
-        # path = os.path.dirname(__file__) + '/modules'
-        path = '/home/testuser/GalacticManager/src_2_0/modules'
+        path = os.path.dirname(__file__) + '/modules'
+        #path = '/home/testuser/GalacticManager/src_2_0/modules'
         for filename in os.listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')

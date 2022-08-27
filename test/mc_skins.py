@@ -1,10 +1,6 @@
 import getskin
 from PIL import Image
 
-from logger import log_debug
-
-from .database.players_db import PlayersDatabase
-
 skins_path = '/home/repositories/python/GalacticManager/src/data/skins/'
 heads_path = '/home/repositories/python/GalacticManager/src/data/heads/'
 
@@ -27,20 +23,10 @@ class SkinProvider():
             Returns path to head
         '''
         username = username.lower()
-        # Get base64 skin
-        result = PlayersDatabase.execute_query(f'select Value from skins where Nick = (select Skin from applied_skins where Nick = "{username}")')
-        try:
-            if (not result):
-                skin = getskin.Skin.get_by_username(username)
-                skin.download(f'{skins_path}{username}.png')
-                log_debug('Use minecraft.com skin')
-            else:
-                base64 = result[0][0]
-                skin = getskin.Skin.get_by_base64(base64)
-                log_debug('Use custom SkinRestorer skin')
-        except Exception as e:
-            log_debug('Use classic Steves head')
-            return f'{heads_path}1standart.png'
+        # Get base64 skin        try:
+        skin = getskin.Skin.get_by_username(username)
+        skin.download(f'{skins_path}{username}.png')
+        print('Use minecraft.com skin')
         # Download skin
         skin.download(f'{skins_path}{username}.png')
         # Open skin with PIL
