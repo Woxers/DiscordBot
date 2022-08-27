@@ -1,8 +1,0 @@
-USER_NAME, USER_MENTION, URL, COLOR, TIMESTAMP
-{
-    "title": "Hey, %%USER_NAME%%!", 
-    "description": "How are you today %%USER_MENTION%%?",
-    "url": "%%URL%%",
-    "color": %%COLOR%%,
-    "timestamp": "%%TIMESTAMP%%"
-}
