@@ -21,17 +21,24 @@ class GalacticBot(commands.Bot):
     async def on_ready(self): 
         self.guild = self.get_current_guild()
         log_info('Bot connected successfully!')
-        await self.update_activity_loop.start()
-        self.tree.copy_global_to(guild=self.guild_object)
-        self.tree.add_command()
-        await self.tree.sync(guild=self.guild_object)
+        self.update_activity_loop.start()
+        self.update_players_count.start()
     
     @tasks.loop(seconds=60)
     async def update_activity_loop(self):
-        messages_part = ['just', 'just type', 'just type ?menu']
+        messages_part = ['just', 'just type', 'just type !menu']
         for messege in messages_part:
             await asyncio.sleep(3)
             await self.change_presence(activity=discord.Game(name=messege))
+            
+    @tasks.loop(seconds=360)
+    async def update_players_count(self):
+        channel = self.get_channel(992029425736626176)
+        try:
+            players = await self.get_cog('McStats').get_online()
+            await channel.edit(name=f'Online: {len(players)}')
+        except Exception as e:
+            await channel.edit(name=f'Online: ERROR')
 
     def get_current_guild(self):
         return self.get_guild(config['guild']['id'])
@@ -57,8 +64,8 @@ class GalacticBot(commands.Bot):
     # Connectins extensions
     async def setup_cogs(self):
         '''Setup all modules'''
-        path = os.path.dirname(__file__) + '/modules'
-        #path = '/home/testuser/GalacticManager/src_2_0/modules'
+        #path = os.path.dirname(__file__) + '/modules'
+        path = '/home/repositories/python/GalacticManager/src/modules'
         for filename in os.listdir(path):
             if filename.endswith('.py') and not filename.startswith('__'):
                 await self.load_extension(f'modules.{filename[:-3]}')

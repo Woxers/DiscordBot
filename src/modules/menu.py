@@ -153,6 +153,9 @@ class AccountSelectorSettingsPage(Page):
         self.settings_types.append(McSettings.get('tab_type'))
 
         for settings_type in self.settings_types:
+            # if(settings_type.name == 'quick_auth'):
+            #     options.append({'label': settings_type.value['name'], 'description': settings_type.value['description'], 'emoji': settings_type.value['emoji'], 'default': True})
+            # else:
             options.append({'label': settings_type.value['name'], 'description': settings_type.value['description'], 'emoji': settings_type.value['emoji']})
 
         dropdown = Dropdown(self.menu_message, 'Настройки аккаунта', options)
@@ -163,6 +166,8 @@ class AccountSelectorSettingsPage(Page):
         self.view_items.append(self.menu_message.get_close_button())
     
     def create_embed(self):
+        # page: Page = await AccountSettingsPage.create(self.menu_message, self.player, McSettings.get('quick_auth'))
+        # self.embed = page.get_embed()
         embed = discord.Embed()
         # Title
         embed.color = get_color('neutral')
@@ -172,6 +177,9 @@ class AccountSelectorSettingsPage(Page):
     async def dropdown_callback(self, arg: str):
         for type in self.settings_types:
             if (arg == type.value['name']):
+                # next_page: Page = await AccountSettingsPage.create(self.menu_message, self.player, type)
+                # self.embed = next_page.get_embed()
+                # await self.menu_message.update()
                 await self.menu_message.switch_page(await AccountSettingsPage.create(self.menu_message, self.player, type))
                 return
         raise ValueError(f'There is no settings with name: {arg}')
@@ -290,11 +298,18 @@ class MainPage(Page):
 
     def create_view_items(self):
         # Creating accounts button
-        accounts_button = CustomButton(discord.ButtonStyle.green, 'Аккаунты')
-        accounts_button.set_callback(self.accounts_button_callback)
+        accounts_button = None
+        players: list[Player] = self.menu_message.galactic_user.players
+        if (len(players) > 0):
+            if (len(players) == 1):
+                accounts_button = CustomButton(discord.ButtonStyle.green, players[0].realname)
+            else:
+                accounts_button = CustomButton(discord.ButtonStyle.green, 'Аккаунты')
+            accounts_button.set_callback(self.accounts_button_callback)
         # Append item list
         self.view_items.append(self.menu_message.get_return_button())
-        self.view_items.append(accounts_button)
+        if (accounts_button != None):
+            self.view_items.append(accounts_button)
         self.view_items.append(self.menu_message.get_close_button())
     
     def create_embed(self):
@@ -316,17 +331,20 @@ class MainPage(Page):
         else:
             embed.set_thumbnail(url=self.menu_message.user.avatar.url)
         # Fields
-        players: list[Player] = galactic_user.players
-        for player in players:
-            active = 'да' if galactic_user.status.name == 'access' and player.has_access == 1 else 'нет'
-            role_name = f"{player.groups[0].value['name']} {player.groups[0].value['emoji']}"
-            date = player.reg_date.strftime('%Y-%m-%d')
-            embed.add_field(name=player.realname, inline=1, value=f'Активен: `{active}`\nРоль: `{role_name}`\nНаиграно: `IN_DEV`\nЗарегистрирован: `{date}`')
+        # players: list[Player] = galactic_user.players
+        # for player in players:
+        #     active = 'да' if galactic_user.status.name == 'access' and player.has_access == 1 else 'нет'
+        #     role_name = f"{player.groups[0].value['name']} {player.groups[0].value['emoji']}"
+        #     date = player.reg_date.strftime('%Y-%m-%d')
+        #     embed.add_field(name=player.realname, inline=1, value=f'Активен: `{active}`\nРоль: `{role_name}`\nНаиграно: `IN_DEV`\nЗарегистрирован: `{date}`')
         self.embed = embed
     
     async def accounts_button_callback(self):
-        await self.menu_message.switch_page(await AccountSelectionPage.create(self.menu_message))
-        log_debug('accounts button callback')
+        if (len(self.menu_message.galactic_user.players) == 1):
+            await self.menu_message.switch_page(await AccountPage.create(self.menu_message, self.menu_message.galactic_user.players[0]))
+        else:
+            await self.menu_message.switch_page(await AccountSelectionPage.create(self.menu_message))
+            log_debug('accounts button callback')
 
 
 ########################################
@@ -427,7 +445,7 @@ class MenuMessage(PageStack):
         await self.message.remove_attachments()
         self.view.clear_items()
         # Switch page
-        page = self.get_last()
+        page = self.get_last()        
         embed = page.get_embed()
         attachment = page.get_attachment()
         if (page.get_view_items() != None):
@@ -443,6 +461,8 @@ class MenuMessage(PageStack):
         log_debug('Return button clicked')
         if (len(self.stack) > 1):
             self.previous()
+            if (type(self.get_last()) == AccountPage):
+                self.get_last().create_embed()
             await self.update()
 
     async def close_button_callback(self):

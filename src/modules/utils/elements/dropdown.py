@@ -1,6 +1,7 @@
 import discord
 
 from discord.ui import Select
+from logger import log_debug
 
 class Dropdown(Select):
     def __init__(self, menu_message, placeholder, options):
@@ -11,7 +12,6 @@ class Dropdown(Select):
         '''
         self.menu_message = menu_message
         self.callback_function = None
-        self.clicked = 0
         dropdown_options = []
 
         for option in options:
@@ -29,11 +29,10 @@ class Dropdown(Select):
         self.callback_function = function
 
     async def callback(self, interaction: discord.Interaction):
+        log_debug('Dropdown callback')
         await interaction.response.defer()
-        if (not self.disabled):
-            self.disabled = 1
-            if (self.callback_function != None):
-                await self.callback_function(self.values[0])
-
+        if (self.callback_function != None):
+            await self.callback_function(self.values[0])
+            
     def reset(self):
-        self.disabled = 0
+        pass
