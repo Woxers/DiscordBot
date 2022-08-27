@@ -3,6 +3,8 @@ from discord import app_commands
 
 import traceback
 
+from src.config import config
+
 # The guild in which this slash command will be registered.
 # It is recommended to have a test guild to separate from your "production" bot
 TEST_GUILD = discord.Object(id=508721497360171018)
@@ -74,7 +76,5 @@ async def feedback(interaction: discord.Interaction):
     # Since modals require an interaction, they cannot be done as a response to a text command.
     # They can only be done as a response to either an application command or a button press.
     await interaction.response.send_modal(Feedback())
-
-from config import config
 
 client.run(config['bot']['token'])

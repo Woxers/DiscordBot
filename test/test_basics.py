@@ -3,6 +3,7 @@ from typing import Optional
 import discord
 from discord import app_commands
 
+from src.config import config
 
 MY_GUILD = discord.Object(id=853613777349640262)  # replace with your guild id
 
@@ -111,8 +112,5 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
     url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
     await log_channel.send(embed=embed, view=url_view)
-
-
-from config import config
 
 client.run(config['bot']['token'])
